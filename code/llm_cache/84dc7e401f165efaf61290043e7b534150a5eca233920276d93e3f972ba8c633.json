@@ -1,0 +1,156 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v2",
+  "input_tokens": 2165,
+  "output_tokens": 1659,
+  "result": {
+    "console_type": "Sentinel",
+    "visible_text": "Northstar Shop Sentinel Search events, users, IP addresses or references... Production Help S Overview Threats Account events Audit logs Detections Investigations Reports Account events 6 signed events Subject filter: user_03 · 18-26 Aug 2026 UTC Events (6) Timeline Integrity Events 6 Categories 5 Integrity failures 0 Partition 2026-Q3 Events (6) Updated moments ago · 6 records Time (UTC) Event Category Subject Actor Integrity Reference 1 25 Aug 04:03 Account closure recorded Account lifecycle user_03 Automated workflow Valid audit_record_003 2 25 Aug 03:21 Session revoked Session management user_03 Security system Valid audit_record_002 3 24 Aug 16:14 Recovery challenge completed Authentication user_03 User (self) Valid audit_record_001 4 22 Aug 11:27 Email change confirmed Profile update user_03 User (self) Valid audit_record_006 5 20 Aug 09:42 Login from new device Authentication user_03 User (self) Valid audit_record_005 6 18 Aug 14:05 Password changed Authentication user_03 User (self) Valid audit_record_004 audit_record_003 · Raw event event_type account_closure_recorded subject user_03 actor automated account workflow recorded_at 2026-08-25T04:03:00Z fingerprint 8f0c...31ad signature Valid journal 2026-Q3 Activity 25 Aug Account closure recorded 25 Aug Session revoked 24 Aug Recovery challenge completed 22 Aug Email change confirmed Sentinel Production workspace build 2026.10.4",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-08-25T04:03:00Z",
+      "2026-08-25T04:03",
+      "2026-08-25T03:21",
+      "2026-08-24T16:14",
+      "2026-08-22T11:27",
+      "2026-08-20T09:42",
+      "2026-08-18T14:05"
+    ],
+    "page_entity": null,
+    "rows": [
+      {
+        "resource_id": "audit_record_003",
+        "file_name": null,
+        "record_type": "SECURITY_AUDIT_LOG",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_03"
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": "audit_record_002",
+        "file_name": null,
+        "record_type": "SECURITY_AUDIT_LOG",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_03"
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": "audit_record_001",
+        "file_name": null,
+        "record_type": "SECURITY_AUDIT_LOG",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_03"
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": "audit_record_006",
+        "file_name": null,
+        "record_type": "SECURITY_AUDIT_LOG",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_03"
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": "audit_record_005",
+        "file_name": null,
+        "record_type": "SECURITY_AUDIT_LOG",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_03"
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": "audit_record_004",
+        "file_name": null,
+        "record_type": "SECURITY_AUDIT_LOG",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_03"
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      }
+    ]
+  }
+}

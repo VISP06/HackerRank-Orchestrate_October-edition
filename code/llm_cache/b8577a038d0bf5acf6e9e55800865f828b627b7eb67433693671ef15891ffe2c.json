@@ -1,0 +1,224 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v2",
+  "input_tokens": 2139,
+  "output_tokens": 2451,
+  "result": {
+    "console_type": "Nimbus Object Storage",
+    "visible_text": "Northstar Shop\nNimbus Object Storage\nSearch objects by name or prefix...\nProduction Help NO\nNorthstar Shop / Nimbus Object Storage / northstar-customer-data\nnorthstar-customer-data 8 objects\neu-west-1 / support-attachments / 2026 / 02\nFilter Export Actions\nObjects Versions Access\nAccount\nNorthstar Production\nRegion\neu-west-1\nCaptured\n13 Feb 2026 08:00 UTC\nStorage class\nAll\nObjects\nUpdated moments ago · 8 records\nName Size Modified (UTC) Storage class Version\n1 delivery_confirmation_19.pdf 684 KB 12 Feb 18:42 Standard v3\n2 delivery_confirmation_20.pdf 712 KB 11 Feb 14:17 Standard v1\n3 return_label_4821.pdf 203 KB 10 Feb 09:33 Standard v1\n4 return_label_4876.pdf 198 KB 11 Feb 16:05 Standard v2\n5 invoice_NS-10493.pdf 318 KB 10 Feb 11:21 Standard v1\n6 parcel_damage_7713.jpg 2.4 MB 12 Feb 10:08 Standard v1\n7 customer_export_2026-02-10.zip 128 MB 10 Feb 23:14 Standard v1\n8 customer_export_2026-02-12.zip 131 MB 12 Feb 21:56 Standard v1\ndelivery_confirmation_19.pdf\nSize 684 KB\nVersion v3\nContent type application/pdf\nEncryption AES-256\nChecksum e71b6d...\nUploader support-service\nModified 12 Feb 2026 18:42 UTC\nActivity\nv3\n12 Feb 18:42 · metadata update\nv2\n12 Feb 18:39 · upload complete\nv1\n12 Feb 18:38 · object created\nBuckets\nAccess policies\nMonitoring\nSettings\nnorthstar-assets\nnorthstar-customer-data\nnorthstar-logs\nNimbus Object Storage\nProduction workspace\nbuild 2026.10.4",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-02-13T08:00:00Z",
+      "2026-02-12T18:42:00Z",
+      "2026-02-11T14:17:00Z",
+      "2026-02-10T09:33:00Z",
+      "2026-02-11T16:05:00Z",
+      "2026-02-10T11:21:00Z",
+      "2026-02-12T10:08:00Z",
+      "2026-02-10T23:14:00Z",
+      "2026-02-12T21:56:00Z",
+      "2026-02-12T18:42:00Z",
+      "2026-02-12T18:39:00Z",
+      "2026-02-12T18:38:00Z"
+    ],
+    "page_entity": {
+      "resource_id": null,
+      "record_type": null,
+      "state": "PRESENT",
+      "identifiers": {
+        "email": null,
+        "name": "northstar-customer-data",
+        "phone": null,
+        "email_hash": null,
+        "user_id": null
+      },
+      "attributes": {
+        "enabled": null,
+        "restore_allowed": null,
+        "retention_status": null,
+        "retention_until": null,
+        "expires_at": null,
+        "status": null
+      }
+    },
+    "rows": [
+      {
+        "resource_id": null,
+        "file_name": "delivery_confirmation_19.pdf",
+        "record_type": "SUPPORT_ATTACHMENT",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": "delivery_confirmation_20.pdf",
+        "record_type": "SUPPORT_ATTACHMENT",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": "return_label_4821.pdf",
+        "record_type": "SUPPORT_ATTACHMENT",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": "return_label_4876.pdf",
+        "record_type": "SUPPORT_ATTACHMENT",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": "invoice_NS-10493.pdf",
+        "record_type": "SUPPORT_ATTACHMENT",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": "parcel_damage_7713.jpg",
+        "record_type": "SUPPORT_ATTACHMENT",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": "customer_export_2026-02-10.zip",
+        "record_type": "USER_EXPORT",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": "customer_export_2026-02-12.zip",
+        "record_type": "USER_EXPORT",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      }
+    ]
+  }
+}

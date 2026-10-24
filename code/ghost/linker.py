@@ -247,6 +247,44 @@ class CaseLinker:
             return False
         return True
 
+    def _pre_request_screenshot(self, obs: Observation, case: Dict[str, str]) -> bool:
+        """A screenshot taken before the deletion request is historical only.
+
+        It can ground identity, but it cannot prove that a record survived the
+        deletion workflow that the request started.  Screenshots captured
+        during the request window remain fully admissible.
+        """
+        if obs.source_kind != "png":
+            return False
+        requested_at = case.get("requested_at", "")
+        return bool(requested_at and obs.captured_at and obs.captured_at < requested_at)
+
+    def _conflicts_with_subject(self, obs: Observation, cluster: Dict[str, Any]) -> bool:
+        """True when a screenshot's own strong identifiers exclude the subject.
+
+        Resource-scoped attachment is safe for identifier-free rows, but a
+        screenshot that names a different person must not become state for
+        this case merely because a catalog row points at the same resource.
+        """
+        if obs.source_kind != "png":
+            return False
+        strong = []
+        for key in ("email", "phone", "email_hash", "user_id"):
+            for value in obs.identifiers.get(key, set()):
+                strong.append((key, value))
+        if not strong:
+            return False
+        for key, value in strong:
+            if key == "email" and value in cluster["emails"]:
+                return False
+            if key == "phone" and value in cluster["phones"]:
+                return False
+            if key == "email_hash" and value in cluster["hashes"]:
+                return False
+            if key == "user_id" and value == cluster["user_id"]:
+                return False
+        return True
+
     def _family_linked(self, trace: CaseTrace, family: str) -> bool:
         categories = FAMILY_CATEGORIES.get(family, set())
         for rid, resource_trace in trace.resources.items():
@@ -327,6 +365,8 @@ class CaseLinker:
                 # reported link reason/evidence names the strongest source.
                 matched.sort(key=lambda item: (not item[0], item[1].sort_key()))
                 for eligible, obs in matched:
+                    if self._pre_request_screenshot(obs, case):
+                        continue
                     trace.add_observation(
                         obs,
                         LinkPath(
@@ -399,6 +439,10 @@ class CaseLinker:
         for rid in list(trace.resources):
             for obs in self.index.by_resource.get(rid, []):
                 if obs in trace.resources[rid].observations:
+                    continue
+                if self._conflicts_with_subject(obs, cluster):
+                    continue
+                if self._pre_request_screenshot(obs, case):
                     continue
                 eligible = self._eligible(obs, audit_at)
                 trace.add_observation(

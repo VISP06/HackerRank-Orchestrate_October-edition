@@ -1,0 +1,129 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v2",
+  "input_tokens": 2165,
+  "output_tokens": 1235,
+  "result": {
+    "console_type": "Audience Operations",
+    "visible_text": "Northstar Shop Audience Operations Search customers, audiences, campaigns... Production Help AO Northstar Shop / Audience Operations / Audience Operations Soo-jin Park Live Filter Export Actions marketing_001 sj.park@naver.com +82 10-5837-9451 Profile Attributes Memberships Activity Market South Korea Language Korean Email opt-in Yes SMS opt-in No Last refreshed 15 Sep 2026 23:40 UTC Profile Updated moments ago 4 records Time Activity Detail 1 23:40 Product-category update Desk accessories Drinkware 2 23:38 Campaign eligibility check Autumn offers Eligible 3 23:35 Profile refresh Live profile fields updated 4 23:32 Audience evaluation Returning customers East Asia Audience membership Audience Returning customers East Asia Segments Repeat customer Home & lifestyle Mobile shopper Preferred categories Desk accessories Drinkware Last campaign Autumn offers Open rate 32.4% Click rate 6.8% Activity Autumn offers 32.4% open rate Home & Lifestyle Picks 28.7% open rate Profile refreshed from live data Recorded Audience Operations Production workspace build 2026.10.4",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-09-15T23:40:00Z",
+      "2026-09-15T23:40:00Z",
+      "2026-09-15T23:38:00Z",
+      "2026-09-15T23:35:00Z",
+      "2026-09-15T23:32:00Z"
+    ],
+    "page_entity": {
+      "resource_id": null,
+      "record_type": "MARKETING_PROFILE",
+      "state": "ACTIVE",
+      "identifiers": {
+        "email": "sj.park@naver.com",
+        "name": "Soo-jin Park",
+        "phone": "+82 10-5837-9451",
+        "email_hash": null,
+        "user_id": "marketing_001"
+      },
+      "attributes": {
+        "enabled": null,
+        "restore_allowed": null,
+        "retention_status": null,
+        "retention_until": null,
+        "expires_at": null,
+        "status": "Live"
+      }
+    },
+    "rows": [
+      {
+        "resource_id": null,
+        "file_name": null,
+        "record_type": null,
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": null,
+        "record_type": null,
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": null,
+        "record_type": null,
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": null,
+        "record_type": null,
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      }
+    ]
+  }
+}

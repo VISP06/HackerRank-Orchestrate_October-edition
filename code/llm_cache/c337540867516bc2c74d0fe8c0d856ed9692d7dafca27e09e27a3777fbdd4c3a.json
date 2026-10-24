@@ -1,0 +1,114 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v2",
+  "input_tokens": 2139,
+  "output_tokens": 1290,
+  "result": {
+    "console_type": "BridgeOps",
+    "visible_text": "Northstar Shop BridgeOps Search connectors... Production Help B Connections 12 connectors Filter Export Actions Northstar Shop / BridgeOps / Connections Connections PRODUCTION · eu-west · 07 Aug 2026 08:00 UTC Topology Throughput Recent deliveries Healthy 12 Events / hour 4,113 Delivery p95 1.8 s Backlog 18 Destination health Healthy Topology Updated moments ago · 4 records Connector Destination Selector Mode Events/hour Last contact 1 data_flow_1121 customer_analytics_warehouse jain.aditi@gmail.com Continuous 1,284 07:59:42 2 data_flow_9846 customer_analytics_warehouse lucia-torres@gmail.com Continuous 842 07:59:36 3 Order notifications notification_service order events Continuous 650 07:59:28 4 Delivery tracking logistics_warehouse shipment events Continuous 420 07:59:13 data_flow_1121 Status Healthy Owner Data Platform Destination customer_analytics_warehouse Selector jain.aditi@gmail.com Sync mode Continuous sync Last response 200 OK · 1.8 s Activity 07:59:42 124 events delivered 07:58:10 checkpoint committed 07:56:44 18 events retried 07:55:02 destination acknowledged batch BridgeOps Production workspace build 2026.10.4",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-08-07T08:00:00Z",
+      "2026-08-07T07:59:42",
+      "2026-08-07T07:59:36",
+      "2026-08-07T07:59:28",
+      "2026-08-07T07:59:13",
+      "2026-08-07T07:59:42",
+      "2026-08-07T07:58:10",
+      "2026-08-07T07:56:44",
+      "2026-08-07T07:55:02"
+    ],
+    "page_entity": null,
+    "rows": [
+      {
+        "resource_id": "data_flow_1121",
+        "file_name": null,
+        "record_type": "DATA_FLOW",
+        "state": "ACTIVE",
+        "identifiers": {
+          "email": "jain.aditi@gmail.com",
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": true,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": "Healthy"
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": "data_flow_9846",
+        "file_name": null,
+        "record_type": "DATA_FLOW",
+        "state": "ACTIVE",
+        "identifiers": {
+          "email": "lucia-torres@gmail.com",
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": true,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": null,
+        "record_type": "DATA_FLOW",
+        "state": "ACTIVE",
+        "identifiers": {
+          "email": null,
+          "name": "Order notifications",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": true,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": null,
+        "record_type": "DATA_FLOW",
+        "state": "ACTIVE",
+        "identifiers": {
+          "email": null,
+          "name": "Delivery tracking",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": true,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      }
+    ]
+  }
+}

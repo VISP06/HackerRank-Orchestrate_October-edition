@@ -1,0 +1,157 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v2",
+  "input_tokens": 2139,
+  "output_tokens": 1577,
+  "result": {
+    "console_type": "Pulse Analytics",
+    "visible_text": "Northstar Shop Pulse Analytics Search users, products, orders or events... Production Help PA Northstar Shop / Pulse Analytics / Users Omar Darwish Last 90 days Filter Export Actions user_20 · analytics_7438 · darwish.omar@icloud.com Event timeline Sessions (12) Orders (2) Products viewed (19) Sessions 12 Products viewed 19 Completed orders 2 Revenue USD 167.42 Mobile / Desktop 67% / 33% Acquisition Organic search Event timeline Updated moments ago · 5 records Time Event Product / detail Value Device 1 14:22 Order completed Ceramic coffee set USD 84.21 Mobile 2 14:20 Checkout started 2 items USD 84.21 Mobile 3 14:17 Product viewed Ceramic coffee set — Mobile 4 14:16 Added to cart Ceramic coffee set USD 42.00 Mobile 5 14:12 Product viewed Stoneware mug USD 18.00 Desktop Profile attributes Market AE Audience Returning shopper Interest Coffee & dining Last activity 13 Jul 2026 14:22 UTC First seen 21 Apr 2026 09:14 UTC Activity 13 Jul 6 events in active session 08 Jul Order completed · USD 83.21 30 Jun Product search · coffee set 22 Jun Campaign opened Overview Real-time Users Products Funnels Journeys Audiences Reports Pulse Analytics Production workspace build 2026.10.4",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-07-13T14:22:00Z",
+      "2026-07-13T14:20:00Z",
+      "2026-07-13T14:17:00Z",
+      "2026-07-13T14:16:00Z",
+      "2026-07-13T14:12:00Z",
+      "2026-07-13T14:22:00Z",
+      "2026-07-13",
+      "2026-07-08",
+      "2026-06-30",
+      "2026-06-22",
+      "2026-04-21T09:14:00Z"
+    ],
+    "page_entity": {
+      "resource_id": "analytics_7438",
+      "record_type": "ANALYTICS_PROFILE",
+      "state": "ACTIVE",
+      "identifiers": {
+        "email": "darwish.omar@icloud.com",
+        "name": "Omar Darwish",
+        "phone": null,
+        "email_hash": null,
+        "user_id": "user_20"
+      },
+      "attributes": {
+        "enabled": null,
+        "restore_allowed": null,
+        "retention_status": null,
+        "retention_until": null,
+        "expires_at": null,
+        "status": null
+      }
+    },
+    "rows": [
+      {
+        "resource_id": null,
+        "file_name": null,
+        "record_type": null,
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": null,
+        "record_type": null,
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": null,
+        "record_type": null,
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": null,
+        "record_type": null,
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": null,
+        "record_type": null,
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      }
+    ]
+  }
+}

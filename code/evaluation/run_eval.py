@@ -346,11 +346,20 @@ def main() -> None:
         action="store_true",
         help="Run the pipeline without LLM features (deterministic baseline).",
     )
+    parser.add_argument(
+        "--llm-tasks",
+        default="screenshots,pdfs,intent",
+        help="Comma-separated LLM tasks to enable.",
+    )
     args = parser.parse_args()
 
     pred_file = args.pred
     if not pred_file:
-        run_pipeline(args.requests, args.out, skip_llm=args.skip_llm)
+        run_pipeline(
+            args.requests, args.out,
+            skip_llm=args.skip_llm,
+            llm_tasks=args.llm_tasks,
+        )
         pred_file = args.out
 
     evaluate(pred_file, args.ground_truth)

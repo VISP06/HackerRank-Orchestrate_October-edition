@@ -1,0 +1,162 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "pdf_extract",
+  "prompt_version": "v1",
+  "input_tokens": 1106,
+  "output_tokens": 1563,
+  "result": {
+    "document_type": "legal_retention_register",
+    "records": [
+      {
+        "resource_id": "ORD-20264118",
+        "record_type": "LEGAL_HOLD_RECORD",
+        "system_id": "legal_service",
+        "state": "RETAINED",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_08",
+          "customer_reference": null
+        },
+        "attributes": {
+          "retention_until": "2033-05-04",
+          "legal_hold": true,
+          "order_reference": "ORD-20264118",
+          "attachment_name": null,
+          "file_name": null,
+          "uploaded_by": "AR",
+          "delivery_status": null,
+          "subject_reference": "Card dispute"
+        },
+        "observed_at": "2026-05-04T00:00:00Z"
+      },
+      {
+        "resource_id": "ORD-20264207",
+        "record_type": "LEGAL_HOLD_RECORD",
+        "system_id": "legal_service",
+        "state": "RETAINED",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_12",
+          "customer_reference": null
+        },
+        "attributes": {
+          "retention_until": "2033-05-09",
+          "legal_hold": true,
+          "order_reference": "ORD-20264207",
+          "attachment_name": null,
+          "file_name": null,
+          "uploaded_by": "ML",
+          "delivery_status": null,
+          "subject_reference": "Tax correction"
+        },
+        "observed_at": "2026-05-09T00:00:00Z"
+      },
+      {
+        "resource_id": "ORD-20264319",
+        "record_type": "LEGAL_HOLD_RECORD",
+        "system_id": "legal_service",
+        "state": "RETAINED",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_17",
+          "customer_reference": null
+        },
+        "attributes": {
+          "retention_until": "2033-05-14",
+          "legal_hold": true,
+          "order_reference": "ORD-20264319",
+          "attachment_name": null,
+          "file_name": null,
+          "uploaded_by": "SK",
+          "delivery_status": null,
+          "subject_reference": "Chargeback"
+        },
+        "observed_at": "2026-05-14T00:00:00Z"
+      },
+      {
+        "resource_id": "ORD-20264402",
+        "record_type": "LEGAL_HOLD_RECORD",
+        "system_id": "legal_service",
+        "state": "RETAINED",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_21",
+          "customer_reference": null
+        },
+        "attributes": {
+          "retention_until": "2033-05-18",
+          "legal_hold": true,
+          "order_reference": "ORD-20264402",
+          "attachment_name": null,
+          "file_name": null,
+          "uploaded_by": "AR",
+          "delivery_status": null,
+          "subject_reference": "Invoice inquiry"
+        },
+        "observed_at": "2026-05-18T00:00:00Z"
+      },
+      {
+        "resource_id": "ORD-20264511",
+        "record_type": "LEGAL_HOLD_RECORD",
+        "system_id": "legal_service",
+        "state": "RETAINED",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_24",
+          "customer_reference": null
+        },
+        "attributes": {
+          "retention_until": "2033-05-23",
+          "legal_hold": true,
+          "order_reference": "ORD-20264511",
+          "attachment_name": null,
+          "file_name": null,
+          "uploaded_by": "ML",
+          "delivery_status": null,
+          "subject_reference": "Card dispute"
+        },
+        "observed_at": "2026-05-23T00:00:00Z"
+      },
+      {
+        "resource_id": "ORD-20264600",
+        "record_type": "LEGAL_HOLD_RECORD",
+        "system_id": "legal_service",
+        "state": "RETAINED",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_29",
+          "customer_reference": null
+        },
+        "attributes": {
+          "retention_until": "2033-05-28",
+          "legal_hold": true,
+          "order_reference": "ORD-20264600",
+          "attachment_name": null,
+          "file_name": null,
+          "uploaded_by": "SK",
+          "delivery_status": null,
+          "subject_reference": "Tax record"
+        },
+        "observed_at": "2026-05-28T00:00:00Z"
+      }
+    ]
+  }
+}

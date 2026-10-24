@@ -1,0 +1,62 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "pdf_extract",
+  "prompt_version": "v1",
+  "input_tokens": 937,
+  "output_tokens": 554,
+  "result": {
+    "document_type": "delivery_correction_attachment",
+    "records": [
+      {
+        "resource_id": "support_4827",
+        "record_type": "SUPPORT_MESSAGE",
+        "system_id": "support_platform",
+        "state": "ACTIVE",
+        "identifiers": {
+          "email": "priya.raman@gmail.com",
+          "name": "Priya Raman",
+          "phone": "+91 98765 73142",
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": "support_001"
+        },
+        "attributes": {
+          "retention_until": null,
+          "legal_hold": null,
+          "order_reference": "ORD-20264827",
+          "attachment_name": null,
+          "file_name": null,
+          "uploaded_by": null,
+          "delivery_status": "change apartment number from 14B to 18B and call before delivery",
+          "subject_reference": "CS-4827"
+        },
+        "observed_at": "2026-06-18T10:24:00Z"
+      },
+      {
+        "resource_id": "object_4827",
+        "record_type": "SUPPORT_ATTACHMENT",
+        "system_id": "object_storage",
+        "state": "RETAINED",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "attributes": {
+          "retention_until": null,
+          "legal_hold": null,
+          "order_reference": null,
+          "attachment_name": "delivery_address_correction.pdf",
+          "file_name": "delivery_address_correction.pdf",
+          "uploaded_by": "customer",
+          "delivery_status": null,
+          "subject_reference": "CS-4827"
+        },
+        "observed_at": "2026-09-12T07:30:00Z"
+      }
+    ]
+  }
+}

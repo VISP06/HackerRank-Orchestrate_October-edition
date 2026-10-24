@@ -30,7 +30,7 @@ PRICING_PATH = Path(__file__).resolve().parent / "llm_pricing.json"
 
 # Prompt versioning: bump when prompt semantics change so old caches are invalidated.
 PROMPT_VERSIONS = {
-    "screenshot_extract": "v1",
+    "screenshot_extract": "v2",
     "pdf_extract": "v1",
     "intent_classify": "v1",
 }

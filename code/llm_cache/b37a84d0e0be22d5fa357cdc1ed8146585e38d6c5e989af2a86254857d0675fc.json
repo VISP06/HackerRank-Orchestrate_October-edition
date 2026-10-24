@@ -1,0 +1,68 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v2",
+  "input_tokens": 2165,
+  "output_tokens": 960,
+  "result": {
+    "console_type": "Search Console",
+    "visible_text": "Northstar Shop Search Console email:g.silva76@gmail.com Production Help SC Customer Search 2 hits Northstar Shop / Search Console / Customer Search Customer Search 2 hits customer_directory_v3 / prod-eu Filter Export Actions Results (2) Query details Shard timing Executed 01 Sep 2026 06:00:14 UTC Latency 184 ms Index customer_directory_v3 Environment prod-eu Shard total 184 ms Results (2) Updated moments ago 2 records _id Display name Email Customer reference Score Last indexed 1 search_428 Gabriel Silva g.silva76@gmail.com user_13 9.84 05:58:21 UTC 2 search_1874 — g.silva76.jr@gmail.com — 4.12 05:55:03 UTC Raw document - search_428 _index customer_directory_v3 _id search_428 display_name Gabriel Silva email g.silva76@gmail.com customer_reference user_13 indexed_at 2026-09-01T05:58:21Z Activity 06:00:14 email:g.silva76@gmail.com 2 hits 05:42:03 customer_reference:user_9842 1 hit 05:31:18 display_name:\"Aditi Jain\" 1 hit Customer Search Product Search Order Search Indexes Cluster health Slow queries Search Console Production workspace build 2026.10.4",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-09-01T06:00:14Z",
+      "2026-09-01T05:58:21Z",
+      "2026-09-01T05:55:03Z",
+      "2026-09-01T05:58:21Z",
+      "2026-09-01T06:00:14Z",
+      "2026-09-01T05:42:03Z",
+      "2026-09-01T05:31:18Z"
+    ],
+    "page_entity": null,
+    "rows": [
+      {
+        "resource_id": "search_428",
+        "file_name": null,
+        "record_type": "SEARCH_INDEX_ENTRY",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": "g.silva76@gmail.com",
+          "name": "Gabriel Silva",
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_13"
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": "search_1874",
+        "file_name": null,
+        "record_type": "SEARCH_INDEX_ENTRY",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": "g.silva76.jr@gmail.com",
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": null
+        },
+        "absent_indicator": false
+      }
+    ]
+  }
+}

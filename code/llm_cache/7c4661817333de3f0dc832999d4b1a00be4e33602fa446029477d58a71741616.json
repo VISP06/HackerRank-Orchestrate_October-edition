@@ -1,0 +1,62 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "pdf_extract",
+  "prompt_version": "v1",
+  "input_tokens": 920,
+  "output_tokens": 570,
+  "result": {
+    "document_type": "invoice",
+    "records": [
+      {
+        "resource_id": "account_18",
+        "record_type": "USER_PROFILE",
+        "system_id": "identity_service",
+        "state": "ACTIVE",
+        "identifiers": {
+          "email": "ingrid.dahl@outlook.com",
+          "name": "Ingrid Dahl",
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_18",
+          "customer_reference": "NST-2026-0718-1842"
+        },
+        "attributes": {
+          "retention_until": null,
+          "legal_hold": false,
+          "order_reference": "ORD-20261260",
+          "attachment_name": null,
+          "file_name": null,
+          "uploaded_by": null,
+          "delivery_status": "delivered",
+          "subject_reference": "NST-2026-0718-1842"
+        },
+        "observed_at": "2026-07-08T00:00:00Z"
+      },
+      {
+        "resource_id": "object_20261260",
+        "record_type": "SUPPORT_ATTACHMENT",
+        "system_id": "object_storage",
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_18",
+          "customer_reference": "ORD-20261260"
+        },
+        "attributes": {
+          "retention_until": null,
+          "legal_hold": false,
+          "order_reference": "ORD-20261260",
+          "attachment_name": "Smart desk lamp",
+          "file_name": null,
+          "uploaded_by": null,
+          "delivery_status": "delivered",
+          "subject_reference": "NST-2026-0718-1842"
+        },
+        "observed_at": "2026-07-14T00:00:00Z"
+      }
+    ]
+  }
+}

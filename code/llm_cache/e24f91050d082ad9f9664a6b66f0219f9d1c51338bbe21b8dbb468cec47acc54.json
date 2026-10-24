@@ -1,0 +1,37 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "pdf_extract",
+  "prompt_version": "v1",
+  "input_tokens": 873,
+  "output_tokens": 284,
+  "result": {
+    "document_type": "security_retention_extract",
+    "records": [
+      {
+        "resource_id": "audit_record_003",
+        "record_type": "SECURITY_AUDIT_LOG",
+        "system_id": "security_service",
+        "state": "RETAINED",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_03",
+          "customer_reference": null
+        },
+        "attributes": {
+          "retention_until": "2027-08-25T04:03:00Z",
+          "legal_hold": null,
+          "order_reference": null,
+          "attachment_name": null,
+          "file_name": null,
+          "uploaded_by": "automated account workflow",
+          "delivery_status": null,
+          "subject_reference": "user_03"
+        },
+        "observed_at": "2026-08-25T04:03:00Z"
+      }
+    ]
+  }
+}

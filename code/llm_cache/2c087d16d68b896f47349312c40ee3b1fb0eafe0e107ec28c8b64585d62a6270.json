@@ -1,0 +1,12 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "intent_classify",
+  "prompt_version": "v1",
+  "input_tokens": 244,
+  "output_tokens": 45,
+  "result": {
+    "intent": "DELETION",
+    "language": "es",
+    "reason": "The user is explicitly asking to complete the deletion of their account after a technical error occurred."
+  }
+}

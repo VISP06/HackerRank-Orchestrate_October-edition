@@ -53,13 +53,14 @@ def _load_dotenv() -> None:
                     os.environ[key] = value
 
 
-def build_engine(dataset_dir: str = "", llm=None):
+def build_engine(dataset_dir: str = "", llm=None, llm_tasks: str = "screenshots,pdfs,intent"):
     """Build the evidence index, linker, and rules.
 
     If an LLM client is provided, screenshot and enhanced PDF observations
     are extracted and merged into the index.
     """
     dataset_dir = dataset_dir or os.path.join(REPO_ROOT, "dataset")
+    enabled = {t.strip() for t in (llm_tasks or "").split(",") if t.strip()}
 
     # Load base evidence index (deterministic parsers)
     index = load_evidence_index(
@@ -74,23 +75,27 @@ def build_engine(dataset_dir: str = "", llm=None):
         manifest = list(csv.DictReader(open(manifest_path, "r", encoding="utf-8")))
 
         # Screenshot extraction
-        from code.ghost.llm_screenshots import extract_all_screenshots
-        screenshot_obs, screenshot_results = extract_all_screenshots(llm, manifest, dataset_dir)
-        for obs in screenshot_obs:
-            index.add(obs)
+        if "screenshots" in enabled:
+            from code.ghost.llm_screenshots import extract_all_screenshots
+            screenshot_obs, screenshot_results = extract_all_screenshots(
+                llm, manifest, dataset_dir, dataset_dir
+            )
+            for obs in screenshot_obs:
+                index.add(obs)
 
         # Enhanced PDF extraction
-        from code.ghost.llm_pdfs import extract_all_pdfs
-        pdf_obs, pdf_results = extract_all_pdfs(llm, manifest, dataset_dir)
-        # Merge LLM PDF observations: for files that the deterministic parser
-        # already handled, only add new resource IDs not already present.
-        existing_pdf_resources = set()
-        for obs in index.observations:
-            if obs.source_kind == "pdf":
-                existing_pdf_resources.add((obs.file_id, obs.resource_id))
-        for obs in pdf_obs:
-            if (obs.file_id, obs.resource_id) not in existing_pdf_resources:
-                index.add(obs)
+        if "pdfs" in enabled:
+            from code.ghost.llm_pdfs import extract_all_pdfs
+            pdf_obs, pdf_results = extract_all_pdfs(llm, manifest, dataset_dir)
+            # Merge LLM PDF observations: for files that the deterministic parser
+            # already handled, only add new resource IDs not already present.
+            existing_pdf_resources = set()
+            for obs in index.observations:
+                if obs.source_kind == "pdf":
+                    existing_pdf_resources.add((obs.file_id, obs.resource_id))
+            for obs in pdf_obs:
+                if (obs.file_id, obs.resource_id) not in existing_pdf_resources:
+                    index.add(obs)
 
         # Rebuild index after adding new observations
         index.build()
@@ -127,6 +132,7 @@ def run_pipeline(
     explain: str = "",
     fresh: bool = False,
     skip_llm: bool = False,
+    llm_tasks: str = "screenshots,pdfs,intent",
 ) -> dict:
     """Run the full pipeline. Returns a summary dict."""
     _load_dotenv()
@@ -137,17 +143,18 @@ def run_pipeline(
     llm = None
     intent_classifications = []
     intent_disagreements = []
+    enabled_tasks = {t.strip() for t in (llm_tasks or "").split(",") if t.strip()}
     if not skip_llm:
         from code.ghost.llm import LLMClient
         llm = LLMClient(fresh=fresh)
 
-    index, linker, rules = build_engine(llm=llm)
+    index, linker, rules = build_engine(llm=llm, llm_tasks=llm_tasks)
     extraction = getattr(index, "llm_extraction", {})
     screenshot_results = extraction.get("screenshots", [])
     pdf_results = extraction.get("pdfs", [])
 
     # Intent cross-check (Task 4)
-    if llm is not None:
+    if llm is not None and "intent" in enabled_tasks:
         from code.ghost.llm_intent import classify_all_intents
         intent_classifications, intent_disagreements = classify_all_intents(
             llm, requests, authorizes_deletion
@@ -255,12 +262,18 @@ def main() -> None:
     parser.add_argument("--explain", default="", help="Print per-resource state for one case id")
     parser.add_argument("--fresh", action="store_true", help="Bypass all LLM caches for a fresh run")
     parser.add_argument("--skip-llm", action="store_true", help="Skip all LLM features (deterministic only)")
+    parser.add_argument(
+        "--llm-tasks",
+        default="screenshots,pdfs,intent",
+        help="Comma-separated LLM tasks to enable (screenshots,pdfs,intent)",
+    )
     args = parser.parse_args()
     summary = run_pipeline(
         args.requests, args.out,
         explain=args.explain,
         fresh=args.fresh,
         skip_llm=args.skip_llm,
+        llm_tasks=args.llm_tasks,
     )
 
     # Print summary

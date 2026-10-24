@@ -1,0 +1,91 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v2",
+  "input_tokens": 2153,
+  "output_tokens": 1055,
+  "result": {
+    "console_type": "Customer Operations",
+    "visible_text": "Northstar Shop Customer Operations Search customers, orders, tickets... Production Help CO Customers Orders Support Catalog Promotions Analytics Haruka Sato Silver user_11 account_5762 Filter Export Actions Overview Orders Addresses Support history Email haruka.s1838@zoho.com Phone +81 90 7610 2507 Signup channel mobile_app Market JP Preferred language Japanese Last contact 24 Sep 2026 09:14 JST Overview Updated moments ago 2 records Order ID Date Item Qty Total Status 1 ORD-20265762 12 Sep 2026 Ceramic coffee set 1 JPY 8,900 Delivered 18 Sep 2 ORD-20265518 28 Aug 2026 Travel backpack 1 JPY 12,400 Returned 03 Sep Customer details Default address 2-18-4 Kichijoji, Musashino, Tokyo 180-0004 Loyalty tier Silver Support CS-8538 support_9538 Member since 12 Jan 2024 Activity 24 Sep Customer replied to CS-8538 22 Sep Support agent responded 18 Sep Order ORD-20265762 delivered 03 Sep Order ORD-20265518 returned 28 Aug support_9538 created Customer Operations Production workspace build 2026.10.4",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-09-24T09:14:00",
+      "2026-09-12",
+      "2026-09-18",
+      "2026-08-28",
+      "2026-09-03",
+      "2026-01-12",
+      "2026-09-24",
+      "2026-09-22",
+      "2026-09-18",
+      "2026-09-03",
+      "2026-08-28"
+    ],
+    "page_entity": {
+      "resource_id": "account_5762",
+      "record_type": "USER_PROFILE",
+      "state": "PRESENT",
+      "identifiers": {
+        "email": "haruka.s1838@zoho.com",
+        "name": "Haruka Sato",
+        "phone": "+81 90 7610 2507",
+        "email_hash": null,
+        "user_id": "user_11"
+      },
+      "attributes": {
+        "enabled": null,
+        "restore_allowed": null,
+        "retention_status": null,
+        "retention_until": null,
+        "expires_at": null,
+        "status": null
+      }
+    },
+    "rows": [
+      {
+        "resource_id": null,
+        "file_name": null,
+        "record_type": null,
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": "Delivered"
+        },
+        "absent_indicator": false
+      },
+      {
+        "resource_id": null,
+        "file_name": null,
+        "record_type": null,
+        "state": "PRESENT",
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null
+        },
+        "attributes": {
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "retention_until": null,
+          "expires_at": null,
+          "status": "Returned"
+        },
+        "absent_indicator": false
+      }
+    ]
+  }
+}

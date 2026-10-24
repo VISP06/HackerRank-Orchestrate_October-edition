@@ -113,11 +113,22 @@ def reconstruct_state(
         if observations:
             observations.sort(key=lambda obs: obs.sort_key(), reverse=True)
             latest = observations[0]
+            state = _state_from_observation(latest)
+            # An export package carries an explicit expiry.  Once the expiry
+            # has passed by the audit cutoff, the package is gone even though
+            # the last screenshot (taken earlier) showed it present.
+            expires_at = str(latest.attrs.get("expires_at") or "")
+            if (
+                latest.record_type == "USER_EXPORT"
+                and expires_at
+                and expires_at <= audit_at
+            ):
+                state = "ABSENT"
             states[resource_id] = ResourceState(
                 resource_id=resource_id,
                 system_id=latest.system_id,
                 category=latest.record_type,
-                state=_state_from_observation(latest),
+                state=state,
                 evidence_id=latest.file_id,
                 observed_at=latest.observed_at,
                 attrs={k: str(v) for k, v in latest.attrs.items()},
@@ -169,17 +180,19 @@ def reconstruct_state(
                 link_path=trace.best_path(),
             )
 
-    # A subject has one current account profile.  Older account ids observed
-    # for the same identity are stale historical resources, not extra copies.
-    # Prefer a profile that is still present over an absent one; if every
-    # candidate is absent, prefer one proven by a direct observation over a
-    # tombstone inferred only from snapshot coverage.
-    profiles = [
-        state
-        for state in states.values()
-        if state.category in {"USER_PROFILE", "ACCOUNT_TOMBSTONE"}
-    ]
-    if len(profiles) > 1:
+    # A subject has one current account profile and one tombstone.  Older
+    # account ids observed for the same identity are stale historical
+    # resources, not extra copies.  Account and tombstone are separate
+    # required checks: a COMPLETE case can verify the account ABSENT and the
+    # tombstone REDACTED at the same time, so never dedupe across categories.
+    for category in ("USER_PROFILE", "ACCOUNT_TOMBSTONE"):
+        profiles = [
+            state
+            for state in states.values()
+            if state.category == category
+        ]
+        if len(profiles) <= 1:
+            continue
         present = [state for state in profiles if state.state != "ABSENT"]
         if present:
             keep = present
@@ -193,5 +206,18 @@ def reconstruct_state(
         for state in profiles:
             if state.resource_id not in keep_ids:
                 states.pop(state.resource_id, None)
+
+    # A catalog-only tombstone inferred from snapshot coverage adds no proof
+    # when the account itself is already verified absent.  Keep a tombstone
+    # that was actually observed (PRESENT / REDACTED / IDENTIFIABLE), because
+    # the sample cases require both checks in that situation.
+    account_absent = any(
+        state.category == "USER_PROFILE" and state.state == "ABSENT"
+        for state in states.values()
+    )
+    if account_absent:
+        for rid, state in list(states.items()):
+            if state.category == "ACCOUNT_TOMBSTONE" and state.state == "ABSENT":
+                states.pop(rid, None)
 
     return states
