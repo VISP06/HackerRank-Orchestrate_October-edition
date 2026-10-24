@@ -98,6 +98,23 @@ grounding or an explicit catalog alias, and reject ids the model invents.
 `notes/IMAGE_FINDINGS.md` and `notes/PDF_FINDINGS.md` contain the per-file
 analysis and the rejected outputs.
 
+### Intent cross-check
+
+The request set has 518 cases but only 375 unique texts after masking the
+embedded email addresses (80 texts are shared by 2–14 cases). The deterministic
+classifier and the model independently labelled all 375:
+
+| Label | Deterministic | LLM | Disagreements |
+|---|---:|---:|---:|
+| DELETION | 365 | 365 | 0 |
+| NON_DELETION | 10 | 10 | 0 |
+
+The ten non-deletion texts are exactly `case_533`–`case_542`; the model agreed
+on all ten and returned no `UNCLEAR`. Languages detected were English (370),
+Portuguese, Korean, Spanish, Japanese, and French (one each). The model is a
+cross-check only: `authorizes_deletion` and the `CLASSIFY_REQUEST` activity keep
+precedence, so a model error cannot change a row.
+
 ## 3. Field-level results
 
 Two field views are reported:
@@ -190,9 +207,10 @@ The final 518-case run is documented in
   evidence-coverage gap, not a finding, and is analysed in
   `notes/ZERO_STEP_FAMILIES.md`
 - 0 label-free invariant violations
-- Runtime: about 3 seconds with the extraction cache (no API calls); the
-  one-time extraction pass made 15 calls and is summarized in
-  `code/evaluation/usage_report.md`
+- Runtime: 73.6 s for the authoritative fresh 15-call extraction run; a
+  cache-only rerun takes 1.36 s and makes zero API calls
+- The fresh run and the cache-only rerun produced byte-identical
+  `output.csv` (SHA-256 `a8aea02c…bd83435`)
 
 ## 6. What could not be resolved
 

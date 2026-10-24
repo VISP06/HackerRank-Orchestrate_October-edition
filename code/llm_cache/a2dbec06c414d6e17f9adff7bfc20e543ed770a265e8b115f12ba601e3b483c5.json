@@ -1,0 +1,12 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "intent_classify",
+  "prompt_version": "v1",
+  "input_tokens": 231,
+  "output_tokens": 49,
+  "result": {
+    "intent": "NON_DELETION",
+    "language": "en",
+    "reason": "The user is requesting a correction of their personal information, not the deletion of their account or data."
+  }
+}

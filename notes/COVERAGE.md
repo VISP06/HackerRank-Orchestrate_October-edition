@@ -90,6 +90,10 @@ contains no record rows.
 | `evidence_28` `support_ticket_console_20260524.png` | 2026-05-24T07:00:00Z | no |
 | `evidence_32` `backup_restore_console_20260429.png` | 2026-04-29T09:00:00Z | no |
 | `evidence_37` `security_audit_explorer_20260905.png` | 2026-09-05T07:00:00Z | no |
+| `evidence_42` `deleted_account_reference_20260310.png` | `evidence_23` `customer_export_console_20260618.png` | 2026-06-18T12:00:00Z | no |
+| `evidence_28` `support_ticket_console_20260524.png` | 2026-05-24T07:00:00Z | no |
+| `evidence_32` `backup_restore_console_20260429.png` | 2026-04-29T09:00:00Z | no |
+| `evidence_37` `security_audit_explorer_20260905.png` | 2026-09-05T07:00:00Z | no |
 | `evidence_42` `deleted_account_reference_20260310.png` | 2026-03-10T06:00:00Z | no |
 | `evidence_46` `object_storage_browser_20260213.png` | 2026-02-13T08:00:00Z | no |
 | `evidence_60` `marketing_profile_console.png` | 2026-09-16T07:20:00Z | no |
@@ -113,6 +117,12 @@ Categories observed through a single format:
 
 - `ACCOUNT_TOMBSTONE`: `sql` only
 
-8 case(s) reach a resource but reconstruct no state at the cutoff: `case_35`, `case_39`, `case_50`, `case_52`, `case_53`, `case_55`, `case_61`, `case_63`
+8 case(s) reach a resource but reconstruct no state at the cutoff in the
+deterministic baseline: `case_35`, `case_39`, `case_50`, `case_52`, `case_53`,
+`case_55`, `case_61`, `case_63`. The vision/PDF passes resolve all but
+`case_63`.
 
-The `png` gap is the main blind spot: screenshots can be the only pre-cutoff artifact for an object or marketing record (see `notes/ZERO_STEP_FAMILIES.md`, Family B).
+The `png` gap was the main blind spot in the deterministic baseline: screenshots
+were the only pre-cutoff artifact for several object, search, analytics, export,
+support, backup, and marketing records. The vision pass now reads them; see
+`notes/IMAGE_FINDINGS.md` and `notes/ZERO_STEP_FAMILIES.md`.

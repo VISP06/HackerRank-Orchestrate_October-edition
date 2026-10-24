@@ -1,0 +1,12 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "intent_classify",
+  "prompt_version": "v1",
+  "input_tokens": 232,
+  "output_tokens": 46,
+  "result": {
+    "intent": "NON_DELETION",
+    "language": "en",
+    "reason": "The user is requesting assistance with account access and explicitly states not to close the account."
+  }
+}

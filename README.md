@@ -135,8 +135,91 @@ python3 code/evaluation/full_run_stats.py
 
 The reports are written to `code/evaluation/evaluation_report.md`,
 `code/evaluation/usage_report.md`, and `code/evaluation/full_run_stats.md`.
-Copies of the two required reports also live in the top-level `evaluation/`
-directory.
+The authoritative reports live inside `code/evaluation/` and are packaged
+directly inside `code.zip`.
+
+---
+
+## Repository Layout
+
+```text
+.
+├── README.md                          # Solution overview, setup, architecture, and instructions
+├── requirements.txt                   # Minimal Python dependencies (google-genai, pypdf)
+├── output.csv                         # Final 518-request audit prediction output
+├── log.txt                            # Coding agent transcript per AGENTS.md turn logging rules
+├── PROJECT_STATE.md                   # Single source of truth for project state and checklist
+├── code/
+│   ├── main.py                        # Pipeline entrypoint, CLI, and output validator
+│   ├── ghost/                         # Core audit package
+│   │   ├── __init__.py
+│   │   ├── loaders.py                 # CSV data loaders with numeric case sorting
+│   │   ├── identity.py                # Current and historical identity resolution
+│   │   ├── evidence_index.py          # Structured evidence parsing (SQL, JSON, logs, text)
+│   │   ├── catalog_aliases.py         # Static LINK_RESOURCE_IDENTITY alias mappings
+│   │   ├── linker.py                  # Identity, catalog, propagation, and workflow linking
+│   │   ├── state.py                   # Temporal state reconstruction at audit_at
+│   │   ├── rules.py                   # deletion_rules.csv mapping and policy engine
+│   │   ├── steps.py                   # Step generation, deduplication, and ordering
+│   │   ├── invariants.py              # Label-free contract and temporal invariants
+│   │   ├── intent.py                  # Multilingual regex/keyword intent classifier
+│   │   ├── validate.py                # Output contract validation
+│   │   ├── llm.py                     # Gemini API client with disk cache and rate limiter
+│   │   ├── llm_screenshots.py         # Screenshot OCR extraction with strict grounding
+│   │   ├── llm_pdfs.py                # PDF extraction with strict token grounding
+│   │   └── llm_intent.py              # LLM-based intent cross-check (diagnostic)
+│   ├── evaluation/                    # Evaluation harness and authoritative reports
+│   │   ├── run_eval.py                # Evaluation on sample requests with dev/held-out split
+│   │   ├── custom_cases.py            # 6 synthetic boundary test cases
+│   │   ├── full_run_stats.py          # Full 518-case stats and coverage generator
+│   │   ├── linking_study.py           # Window-size ablation study for workflow dispatch
+│   │   ├── coverage_report.py         # Evidence coverage report generator
+│   │   ├── evaluation_report.md       # Status, step, sequence accuracy, custom cases, failures
+│   │   ├── usage_report.md            # LLM token usage, call breakdown, and cost report
+│   │   └── full_run_stats.md          # Full run metrics, step distributions, low-evidence cases
+│   └── llm_cache/                     # Pre-cached LLM responses for 100% offline reproducibility
+│       ├── usage_log.jsonl            # Detailed token usage log across all model calls
+│       └── *.json                     # Grounded extraction caches for all 15 artifacts
+└── dataset/                           # Challenge data (not bundled in code.zip)
+```
+
+---
+
+## Design Decisions
+
+1. **Deterministic Logic with Grounded LLM Extraction**:
+   Decision-making, state reconstruction, policy enforcement, step ordering, and serialization are executed entirely in deterministic Python. The LLM layer (Gemini 3.1 Flash Lite) is used strictly for extracting text and data from non-textual evidence (PNG screenshots and PDFs) and providing an independent intent cross-check. The LLM cannot override deterministic decisions or hallucinate steps.
+
+2. **Strict Temporal Boundary (`audit_at`)**:
+   Every case is evaluated strictly up to its individual `audit_at` cutoff timestamp. Any evidence captured or activity recorded after `audit_at` is ignored. Snapshots captured before a resource was known cannot prove subsequent absence.
+
+3. **High-Precision Evidence Linkage**:
+   Resources are linked via confirmed primary/historical identifiers (emails, phones, hashes), catalog reference records, and propagation across connected systems. A narrow unique workflow-dispatch rule (±15 minutes of `reported_at`) links account and analytics dispatches; if multiple ambiguous dispatches share the window, the engine abstains to preserve 100% step precision rather than guessing.
+
+4. **Tombstone Semantics**:
+   When policy requires an `ACCOUNT_TOMBSTONE`, the internal stable user identifier (`user_id`) is retained while all direct personal identifiers (name, email, phone, email hash) must be absent or redacted.
+
+5. **Safe Remediation Ordering**:
+   Remediation steps strictly disable data flows and block restore paths before modifying or deleting records. Downstream copies are processed before upstream sources.
+
+6. **Phase and Operation Sequence**:
+   Steps strictly follow the canonical phase ordering (`FINDING` → `REMEDIATION` → `VERIFICATION`), with consecutive numbering starting at `1`.
+
+---
+
+## Known Limitations
+
+1. **Zero-Step Cases and Low Evidence Coverage (`case_63`)**:
+   In the full 518-case dataset, `case_63` links to a resource via catalog activity, but the sole available evidence artifact is a screenshot console captured before `audit_at` that displays data for a different subject. Under strict grounding rules, the agent refuses to fabricate findings or verifications without subject evidence. This results in a valid `COMPLETE` status with 0 verification steps, marked with the `low_evidence` flag.
+
+2. **Link-Rule Ambiguity and Recall Ceiling**:
+   In `dataset/sample_output.csv`, 20 steps cannot be linked safely from participant data alone without hallucinating or overfitting (such as concurrent batch dispatches where multiple accounts are processed simultaneously without unique identifiers, or security audit logs without user keys). Rather than using arbitrary heuristics like `user_N -> account_N` (which fails on real cases like `user_61 -> account_3960`), the agent abstains, prioritizing perfect precision (1.000) over ungrounded recall.
+
+---
+
+## Privacy and Security Statement
+
+No API keys, access tokens, credentials, or real personal data are included in this repository, in `code.zip`, in `log.txt`, or in git history. All personal identifiers in examples, notes, and transcripts are masked or synthetic. The pipeline reads API keys exclusively from the `GEMINI_API_KEY` environment variable (or an untracked `.env` file) and operates fully offline using the local `code/llm_cache/` when no key is present.
 
 
 
