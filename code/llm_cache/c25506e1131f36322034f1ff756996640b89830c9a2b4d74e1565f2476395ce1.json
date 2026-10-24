@@ -1,0 +1,12 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "intent_classify",
+  "prompt_version": "v1",
+  "input_tokens": 246,
+  "output_tokens": 41,
+  "result": {
+    "intent": "DELETION",
+    "language": "en",
+    "reason": "The user explicitly requests account closure and the deletion of their personal data."
+  }
+}

@@ -2,10 +2,13 @@
 
 ## 1. What was evaluated
 
-The submitted agent is a deterministic audit engine. It reads the participant
+The submitted agent has a deterministic audit engine. It reads the participant
 dataset only, reconstructs state at each case's `audit_at`, applies
 `deletion_rules.csv`, and emits findings, remediation, and verification steps.
-It makes no model calls, so every run is reproducible.
+An optional Gemini layer converts screenshots and PDFs into grounded
+observations and provides an intent cross-check; it cannot override the
+deterministic decision. Every extraction is cached, so the submitted output is
+reproducible with zero API calls.
 
 Evaluation used the 32 public sample requests and their published answers in
 `dataset/sample_output.csv`. That file was used only for measurement; the
@@ -67,6 +70,34 @@ The sample set has no non-deletion request. The full request set has 10
 `NOT_APPLICABLE` cases; the intent classifier was checked to emit exactly those
 10 and no others.
 
+### Model-layer contribution (full 518-case run)
+
+The vision and PDF passes changed 12 full-run rows; the sample metrics above
+are unchanged because the public samples do not contain those artifacts'
+subjects. Each change is grounded in a file captured at or before the case's
+`audit_at`.
+
+| Case | Before | After | Driver |
+|---|---|---|---|
+| `case_33` | COMPLETE (1) | INCOMPLETE (7) | `evidence_18` proves post-deletion export `export_1842` |
+| `case_34` | INCOMPLETE (5) | INCOMPLETE (7) | `account_5762` still present in a 26 Sep console |
+| `case_35` | COMPLETE (0) | INCOMPLETE (5) | `search_428` present on 1 Sep |
+| `case_39` | COMPLETE (0) | INCOMPLETE (6) | `data_flow_1121` active on 7 Aug |
+| `case_45` | COMPLETE (1) | COMPLETE (6) | six retained `audit_record_00x` rows proven present |
+| `case_46` | COMPLETE (1) | COMPLETE (2) | tombstone `tombstone_17` proven redacted |
+| `case_50` | COMPLETE (0) | INCOMPLETE (6) | `analytics_7438` still identifiable |
+| `case_52` | COMPLETE (0) | INCOMPLETE (6) | `export_1260` present before its expiry |
+| `case_53` | COMPLETE (0) | INCOMPLETE (5) | `support_1034` still shows name/email |
+| `case_55` | COMPLETE (0) | INCOMPLETE (6) | `backup_9287` restorable |
+| `case_61` | COMPLETE (0) | INCOMPLETE (4) | `object_19` present in the 13 Feb object browser |
+| `case_63` | COMPLETE (0) | COMPLETE (0) | screenshot names a different person; no subject state invented |
+
+The screenshot and PDF prompts are in `code/ghost/llm_screenshots.py` and
+`code/ghost/llm_pdfs.py`. Both treat artifact text as data, require verbatim
+grounding or an explicit catalog alias, and reject ids the model invents.
+`notes/IMAGE_FINDINGS.md` and `notes/PDF_FINDINGS.md` contain the per-file
+analysis and the rejected outputs.
+
 ## 3. Field-level results
 
 Two field views are reported:
@@ -125,6 +156,11 @@ Result: **6/6 passed**.
 | Snapshot absence used before the resource was known | A snapshot taken before the link cannot prove later absence | Added `known_at` to every link and require the snapshot to be at or after it |
 | Absent analytics record produced no verification | Policy treated `ABSENT` as already anonymized | Absent records now verify `ABSENT`; only `ANONYMIZED` is retained as-is |
 | Unchecked future evidence on `COMPLETE` | Invariants only checked findings | Invariants now validate evidence existence and capture time for findings and `COMPLETE` verifications |
+| Vision model invented `support_5034` | OCR text said `support_1034`; the model normalized it to a nearby id | Accept a resource only if it appears verbatim in the transcribed `visible_text` |
+| PDF model invented `account_18`, `object_20261260`, `support_4827`, `object_4827` | It inferred ids from a customer name, order number, and attachment label | Accept only printed tokens or explicit catalog aliases (`NST-… → export_1842`); drop the rest |
+| Legal register became a false tombstone | A bare `user_17` mention was treated as proof of an account tombstone | Bare `user_N` mentions are identity only; only `LINK_RESOURCE_IDENTITY` can establish a tombstone |
+| Marketing screenshot attached to the wrong person | Catalog row says `marketing_001` belongs to `user_09`; the screenshot shows another email and name | Reject a screenshot whose own strong identifiers name a different person; `case_63` stays evidence-sparse |
+| Late PDF added a step to an earlier case | A post-cutoff export artifact was treated as a copy that existed at `audit_at` | Exclude a late-only `USER_EXPORT` unless a pre-cutoff catalog link grounds it (`case_52`) |
 
 ### Remaining failure categories
 
@@ -146,26 +182,28 @@ raise sample recall while adding unsupported steps on the hidden set.
 The final 518-case run is documented in
 `code/evaluation/full_run_stats.md`. Summary:
 
-- 518 rows: 159 `COMPLETE`, 349 `INCOMPLETE`, 10 `NOT_APPLICABLE`
-- 2,885 steps, mean 5.57 per case, maximum 14
-- Every case now reaches at least one resource; 8 reach a resource but have no
-  admissible state at `audit_at` (the `low_evidence` flag)
-- Those 8 `COMPLETE` cases therefore have zero verification steps; they are
-  evidence-coverage gaps, not findings, and are analysed in
+- 518 rows: 151 `COMPLETE`, 357 `INCOMPLETE`, 10 `NOT_APPLICABLE`
+- 2,937 steps, mean 5.67 per case, maximum 14
+- Every case reaches at least one resource; one reaches a resource but has no
+  admissible subject state at `audit_at` (`case_63`, the `low_evidence` flag)
+- That one `COMPLETE` case has zero verification steps; it is an
+  evidence-coverage gap, not a finding, and is analysed in
   `notes/ZERO_STEP_FAMILIES.md`
 - 0 label-free invariant violations
-- Runtime: under 1 second on the full set
+- Runtime: about 3 seconds with the extraction cache (no API calls); the
+  one-time extraction pass made 15 calls and is summarized in
+  `code/evaluation/usage_report.md`
 
 ## 6. What could not be resolved
 
 1. **Unlinkable resource ids.** The three families above require knowledge that
    is not present in participant-facing evidence. Emitting them would be a
    guess, so the engine omits them and keeps precision at 1.0.
-2. **Zero-step `COMPLETE` cases.** Eight full-run cases have links but no
-   admissible state at `audit_at` (six post-cutoff consolidated readbacks and
-   two catalog-only links whose sole artifacts are screenshots). The engine
-   keeps the status, cites nothing it cannot prove, and marks the rows
-   `low_evidence`; see `notes/ZERO_STEP_FAMILIES.md`.
+2. **One zero-step `COMPLETE` case.** `case_63` has a catalog link but no
+   admissible subject state: its only artifact is a screenshot that names a
+   different person. The engine keeps the status, cites nothing it cannot
+   prove, and marks the row `low_evidence`; see
+   `notes/ZERO_STEP_FAMILIES.md`.
 3. **Ambiguous workflow windows.** When several account deletions occur near a
    reported time, the engine refuses to choose. This is the main recall
    ceiling on account verifications.

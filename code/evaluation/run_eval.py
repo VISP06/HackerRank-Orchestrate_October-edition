@@ -339,7 +339,7 @@ def main() -> None:
     parser.add_argument(
         "--splits",
         action="store_true",
-        help="Also report dev (case index % 4 != 0) and held-out (case index % 4 == 0) metrics.",
+        help="Also report dev (case index %% 4 != 0) and held-out (case index %% 4 == 0) metrics.",
     )
     parser.add_argument(
         "--skip-llm",

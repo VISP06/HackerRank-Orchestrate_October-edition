@@ -1,0 +1,12 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "intent_classify",
+  "prompt_version": "v1",
+  "input_tokens": 239,
+  "output_tokens": 43,
+  "result": {
+    "intent": "DELETION",
+    "language": "en",
+    "reason": "The user is reporting a failed account deletion and requesting that the process be completed."
+  }
+}

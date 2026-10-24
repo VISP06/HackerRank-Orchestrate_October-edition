@@ -1,0 +1,12 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "intent_classify",
+  "prompt_version": "v1",
+  "input_tokens": 243,
+  "output_tokens": 45,
+  "result": {
+    "intent": "DELETION",
+    "language": "en",
+    "reason": "The user is confirming the status of a previously requested account deletion and inquiring about data retention."
+  }
+}
