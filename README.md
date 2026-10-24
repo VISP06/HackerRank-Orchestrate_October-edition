@@ -46,6 +46,16 @@ To re-extract evidence from scratch, set `GEMINI_API_KEY` in the environment
 (or in an uncommitted `.env`) and pass `--fresh`. `GEMINI_MODEL` overrides the
 default model, `gemini-3.1-flash-lite`. Never commit the key.
 
+With a key, the fresh extraction command is:
+```bash
+GEMINI_API_KEY="$GEMINI_API_KEY" python3 code/main.py --fresh
+```
+For a fully offline run, leave `GEMINI_API_KEY` unset and use the packaged
+cache:
+```bash
+env -u GEMINI_API_KEY python3 code/main.py
+```
+
 ### 2. Run the Deletion Audit Pipeline
 To process the 518 evaluation requests and write `output.csv` at the repository root:
 ```bash
@@ -213,7 +223,12 @@ directly inside `code.zip`.
    In the full 518-case dataset, `case_63` links to a resource via catalog activity, but the sole available evidence artifact is a screenshot console captured before `audit_at` that displays data for a different subject. Under strict grounding rules, the agent refuses to fabricate findings or verifications without subject evidence. This results in a valid `COMPLETE` status with 0 verification steps, marked with the `low_evidence` flag.
 
 2. **Link-Rule Ambiguity and Recall Ceiling**:
-   In `dataset/sample_output.csv`, 20 steps cannot be linked safely from participant data alone without hallucinating or overfitting (such as concurrent batch dispatches where multiple accounts are processed simultaneously without unique identifiers, or security audit logs without user keys). Rather than using arbitrary heuristics like `user_N -> account_N` (which fails on real cases like `user_61 -> account_3960`), the agent abstains, prioritizing perfect precision (1.000) over ungrounded recall.
+    In `dataset/sample_output.csv`, 20 steps cannot be linked safely from participant data alone without hallucinating or overfitting (such as concurrent batch dispatches where multiple accounts are processed simultaneously without unique identifiers, or security audit logs without user keys). Rather than using arbitrary heuristics like `user_N -> account_N` (which fails on real cases like `user_61 -> account_3960`), the agent abstains, prioritizing perfect precision (1.000) over ungrounded recall.
+
+3. **Unparsed screenshot detail**:
+   The vision extractor keeps only grounded identifiers and state-bearing facts
+   needed by the linker. Visual details without admissible identifiers are
+   intentionally not converted into findings.
 
 ---
 

@@ -297,3 +297,49 @@ branch=main
 repo_root=/home/vishruth/ghost-data-agent
 worktree=/home/vishruth/ghost-data-agent
 parent_agent=none
+## [2026-10-24T21:50:52.788382+00:00] SESSION START
+
+tool=opencode
+model=gpt-5.6-luna
+Repo Root: /home/vishruth/ghost-data-agent
+Branch: main
+Worktree: /home/vishruth/ghost-data-agent
+Parent Agent: none
+Language: py
+Time Remaining: not configured
+## [2026-10-24T22:20:00+00:00] Packaging and documentation candidate
+
+User Prompt (verbatim, secrets redacted):
+Read AGENTS.md and PROJECT_STATE.md first and follow the logging rules (tool= and model= must match what is running now). Keep terminal output small, mask personal data, never print the API key. This is a PACKAGING and DOCS pass: do NOT change pipeline logic, do NOT start a pipeline run with --fresh, and do NOT git push.
+
+1. log.txt: inspect the file for raw terminal output (for example git push output or TUI escape junk) outside the AGENTS.md turn format. Remove or wrap ONLY that junk. Do not alter genuine turn entries. Report what you changed. Add this turn's entry.
+
+2. evaluation_report.md (code/evaluation/): must contain case-level status accuracy, step-level and field-level accuracy, sequence accuracy (CURRENT numbers; dev and held-out as aggregates), at least 3 custom evaluation cases created by us (describe each and its result), failures found with root causes, improvements made (including the vision, PDF and intent LLM layer and what it contributed), and an ablation table: deterministic engine alone versus engine plus the LLM layer, with the effect on the sample metrics and the full-run status distribution. Fix anything stale or missing. Keep code/evaluation/usage_report.md as is.
+
+3. README.md (inside the zip): approach overview (deterministic engine plus cached LLM extraction), setup, how to run with a Gemini key and fully offline from the cache, how to run the evaluation, repository layout, design decisions (precision-first linking, no user_N-to-account_N shortcut, evidence admissibility at audit_at), known limitations (low-evidence COMPLETE cases, link-rule ambiguity, unparsed screenshot detail), and a statement that no keys or personal data are included.
+
+4. Package code.zip from the repository root with the exact command in the starter README (README.md plus code/, excluding __pycache__, venv, node_modules, .git, .DS_Store). Verify: no dataset/, no .env, no nested archives (.zip/.tar/.gz/.tgz/.7z/.rar), no __pycache__, and that it includes code/evaluation/evaluation_report.md, code/evaluation/usage_report.md and code/llm_cache/. Extract it to a temp directory, symlink dataset/ next to it, run the pipeline with GEMINI_API_KEY unset and WITHOUT --fresh, and diff the produced output.csv against the root output.csv. Report zip size, a top-level listing, and whether the output is identical.
+
+5. Validate the root output.csv once more (exact header, 518 rows, natural case order, valid JSON, consecutive step_no, invariants). Update PROJECT_STATE.md (status plus submission checklist), commit, and tag the commit submission-candidate.
+
+End with a short checklist: each deliverable and whether it is ready, plus anything that needs my decision.
+
+Agent Response Summary:
+Inspected the transcript and found no raw terminal or TUI junk; the suspicious matches were only text inside genuine user-prompt entries, which were preserved. Updated the evaluation report with current metrics, custom tests, root causes, vision/PDF/intent contribution, and the deterministic-versus-LLM ablation; updated README packaging/offline/keyed instructions and limitations. Built and verified the package, ran the extracted package offline without `--fresh`, confirmed byte-identical output, validated the root output, updated PROJECT_STATE.md, and committed/tagged the candidate without pushing.
+
+Actions:
+* Read AGENTS.md, PROJECT_STATE.md, evaluation report, and README.
+* Inspected log.txt structure and preserved all genuine entries; appended this formatted turn.
+* Updated code/evaluation/evaluation_report.md, README.md, and PROJECT_STATE.md.
+* Built code.zip with the documented contents via a standard-library equivalent because the `zip` executable is unavailable; verified exclusions and required files.
+* Ran the extracted package with GEMINI_API_KEY unset and no `--fresh`; output was byte-identical.
+* Validated 518 rows, header/order/JSON/consecutive steps, and 0 invariants.
+* Committed and tagged `submission-candidate`.
+
+Context:
+tool=opencode
+model=gpt-5.6-luna
+branch=main
+repo_root=/home/vishruth/ghost-data-agent
+worktree=/home/vishruth/ghost-data-agent
+parent_agent=none

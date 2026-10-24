@@ -5,10 +5,11 @@
 The submitted agent has a deterministic audit engine. It reads the participant
 dataset only, reconstructs state at each case's `audit_at`, applies
 `deletion_rules.csv`, and emits findings, remediation, and verification steps.
-An optional Gemini layer converts screenshots and PDFs into grounded
+An optional cached Gemini layer converts screenshots and PDFs into grounded
 observations and provides an intent cross-check; it cannot override the
-deterministic decision. Every extraction is cached, so the submitted output is
-reproducible with zero API calls.
+deterministic decision. The authoritative fresh run logged 11 screenshot calls,
+4 PDF calls, and 27 intent calls; the packaged cache reproduces its output
+offline without an API key.
 
 Evaluation used the 32 public sample requests and their published answers in
 `dataset/sample_output.csv`. That file was used only for measurement; the
@@ -100,20 +101,27 @@ analysis and the rejected outputs.
 
 ### Intent cross-check
 
-The request set has 518 cases but only 375 unique texts after masking the
-embedded email addresses (80 texts are shared by 2–14 cases). The deterministic
-classifier and the model independently labelled all 375:
+The intent layer is diagnostic only: deterministic intent classification and
+`CLASSIFY_REQUEST` activity retain precedence. The authoritative usage log has
+27 successful `intent_classify` calls; they are not used to change output rows.
+The earlier development log contains additional diagnostic calls, but those are
+not part of the final run. The LLM is a safety cross-check for multilingual
+request wording, and a model error cannot change a row.
 
-| Label | Deterministic | LLM | Disagreements |
-|---|---:|---:|---:|
-| DELETION | 365 | 365 | 0 |
-| NON_DELETION | 10 | 10 | 0 |
+### Ablation: deterministic engine versus cached LLM layer
 
-The ten non-deletion texts are exactly `case_533`–`case_542`; the model agreed
-on all ten and returned no `UNCLEAR`. Languages detected were English (370),
-Portuguese, Korean, Spanish, Japanese, and French (one each). The model is a
-cross-check only: `authorizes_deletion` and the `CLASSIFY_REQUEST` activity keep
-precedence, so a model error cannot change a row.
+The deterministic-only column is the pre-vision/PDF full run; the LLM-enabled
+column is the authoritative run. Intent remains diagnostic in both columns.
+
+| Configuration | Sample status | Sample sequence | Sample precision / recall / F1 | Full-run status distribution |
+|---|---:|---:|---:|---|
+| Deterministic engine alone | 32/32 (100%) | 17/32 (53.1%) | 1.0000 / 0.8964 / 0.9454 | 159 COMPLETE / 349 INCOMPLETE / 10 NOT_APPLICABLE |
+| Engine + cached vision/PDF/intent layer | 32/32 (100%) | 17/32 (53.1%) | 1.0000 / 0.8964 / 0.9454 | 151 COMPLETE / 357 INCOMPLETE / 10 NOT_APPLICABLE |
+
+The grounded vision/PDF layer changed 12 rows: eight newly exposed incomplete
+cases and four cases whose status stayed the same but gained or retained
+evidence-backed steps. It contributed no sample-metric change because the
+sample subjects do not use those non-text artifacts.
 
 ## 3. Field-level results
 
@@ -207,10 +215,9 @@ The final 518-case run is documented in
   evidence-coverage gap, not a finding, and is analysed in
   `notes/ZERO_STEP_FAMILIES.md`
 - 0 label-free invariant violations
-- Runtime: 73.6 s for the authoritative fresh 15-call extraction run; a
-  cache-only rerun takes 1.36 s and makes zero API calls
-- The fresh run and the cache-only rerun produced byte-identical
-  `output.csv` (SHA-256 `a8aea02c…bd83435`)
+- The authoritative fresh run made 42 successful calls (11 screenshots, 4 PDFs,
+  27 intent) and produced the committed `output.csv`; the offline cache-only
+  rerun is byte-identical and makes zero API calls.
 
 ## 6. What could not be resolved
 
@@ -223,8 +230,12 @@ The final 518-case run is documented in
    prove, and marks the row `low_evidence`; see
    `notes/ZERO_STEP_FAMILIES.md`.
 3. **Ambiguous workflow windows.** When several account deletions occur near a
-   reported time, the engine refuses to choose. This is the main recall
-   ceiling on account verifications.
+  reported time, the engine refuses to choose. This is the main recall
+  ceiling on account verifications.
+4. **Unparsed screenshot detail.** The vision layer extracts only grounded
+   identifiers and state-bearing facts needed by the linker. Visual details
+   without admissible identifiers are intentionally ignored rather than
+   converted into unsupported findings.
 
 ## 7. Open questions
 
