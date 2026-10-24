@@ -1,102 +1,118 @@
 #!/usr/bin/env python3
-"""Main entry point for Ghost Data Still Exists deletion audit agent."""
+"""Ghost Data Still Exists - deterministic deletion audit pipeline."""
 
 import argparse
 import csv
 import os
-import re
 import sys
 
-# Ensure repository root is on sys.path
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from code.ghost.loaders import load_deletion_requests
+from code.ghost.evidence_index import load_evidence_index
+from code.ghost.intent import authorizes_deletion
+from code.ghost.invariants import check_rows
+from code.ghost.linker import CaseLinker, load_activity_rows
+from code.ghost.loaders import load_deletion_requests, load_user_identities, load_user_audit_log
+from code.ghost.rules import load_rules
+from code.ghost.state import reconstruct_state
+from code.ghost.steps import build_case_result, serialize_steps
 from code.ghost.validate import validate_output_file
 
-NON_DELETION_PATTERNS = [
-    r"\bleave\s+(?:the\s+)?account\s+active\b",
-    r"\bnot\s+asking\s+for\s+deletion\b",
-    r"\bnot\s+a\s+request\s+to\s+erase\b",
-    r"\bkeep\s+(?:the\s+)?account\b",
-    r"\bdo\s+not\s+close\s+the\s+account\b",
-    r"\bwithout\s+removing\s+any\s+of\s+my\s+records\b",
-    r"\bmarketing\s+lists\s+only\b",
-    r"\binformation\s+request\b",
-    r"\bleave\s+my\s+profile\b",
-    r"\bcontinue\s+using\s+the\s+service\b",
-    r"\bdon't\s+delete\s+or\s+change\s+anything\b",
-    r"\bdo\s+not\s+delete\b",
-]
 
-NON_DELETION_REGEX = re.compile("|".join(NON_DELETION_PATTERNS), re.IGNORECASE)
+def _dataset_path(name: str) -> str:
+    return os.path.join(REPO_ROOT, "dataset", name)
 
 
-def is_deletion_request(text: str) -> bool:
-    """Check if request authorizes personal data deletion."""
-    if NON_DELETION_REGEX.search(text):
-        return False
-    return True
+def build_engine(dataset_dir: str = ""):
+    dataset_dir = dataset_dir or os.path.join(REPO_ROOT, "dataset")
+    index = load_evidence_index(
+        os.path.join(dataset_dir, "evidence_files.csv"), dataset_dir
+    )
+    linker = CaseLinker(
+        index,
+        load_activity_rows(os.path.join(dataset_dir, "system_activity.csv")),
+        load_user_identities(os.path.join(dataset_dir, "user_identities.csv")),
+        load_user_audit_log(os.path.join(dataset_dir, "user_audit_log.csv")),
+    )
+    rules = load_rules(os.path.join(dataset_dir, "deletion_rules.csv"))
+    return index, linker, rules
 
 
-def run_pipeline(requests_path: str, output_path: str) -> None:
-    """Run baseline audit pipeline and write validated output.csv."""
+def audit_case(case, linker, index, rules):
+    audit_at = case.get("audit_at", "")
+    trace = linker.link_case(case, audit_at)
+    states = reconstruct_state(index, trace, audit_at)
+    status, steps = build_case_result(states, rules, audit_at)
+    return status, steps, trace, states
+
+
+def run_pipeline(requests_path: str, output_path: str, explain: str = "") -> None:
     requests = load_deletion_requests(requests_path)
-    output_rows = []
+    index, linker, rules = build_engine()
 
+    output_rows = []
     for req in requests:
         case_id = req["case_id"]
-        req_text = req.get("request_text", "")
-
-        if not is_deletion_request(req_text):
-            status = "NOT_APPLICABLE"
+        if not authorizes_deletion(req.get("request_text", "")):
+            status, steps = "NOT_APPLICABLE", []
         else:
-            status = "INCOMPLETE"
+            status, steps, trace, states = audit_case(req, linker, index, rules)
+            if explain and case_id == explain:
+                print(f"[explain] {case_id} status={status}")
+                for resource_id in sorted(states):
+                    state = states[resource_id]
+                    print(
+                        f"  {resource_id:22s} {state.category:20s} state={state.state:12s} "
+                        f"evidence={state.evidence_id} link={state.link_path}"
+                    )
+                for resource_id in sorted(trace.resources):
+                    if resource_id not in states:
+                        paths = trace.resources[resource_id].link_paths
+                        if paths:
+                            print(f"  {resource_id:22s} (linked, no observation) {paths[0].describe()}")
+        output_rows.append(
+            {
+                "case_id": case_id,
+                "deletion_status": status,
+                "steps_json": serialize_steps(steps),
+            }
+        )
 
-        output_rows.append({
-            "case_id": case_id,
-            "deletion_status": status,
-            "steps_json": "[]",
-        })
-
-    # Write output CSV
+    output_rows.sort(key=lambda row: int(row["case_id"].split("_")[1]))
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-    with open(output_path, mode="w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
+    with open(output_path, "w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle)
         writer.writerow(["case_id", "deletion_status", "steps_json"])
-        for r in output_rows:
-            writer.writerow([r["case_id"], r["deletion_status"], r["steps_json"]])
+        for row in output_rows:
+            writer.writerow([row["case_id"], row["deletion_status"], row["steps_json"]])
 
-    # Validate output
-    expected_case_ids = [r["case_id"] for r in requests]
-    is_valid, errors = validate_output_file(output_path, expected_cases=expected_case_ids, allow_empty_steps=True)
+    expected = [row["case_id"] for row in requests]
+    is_valid, errors = validate_output_file(output_path, expected_cases=expected, allow_empty_steps=True)
     if not is_valid:
         print(f"Validation failed for {output_path}:", file=sys.stderr)
-        for err in errors[:10]:
-            print(f"  - {err}", file=sys.stderr)
+        for error in errors[:10]:
+            print(f"  - {error}", file=sys.stderr)
         sys.exit(1)
 
-    print(f"Successfully generated baseline {output_path} ({len(output_rows)} cases, valid schema).")
+    evidence_dates = {fid: meta["captured_at"] for fid, meta in index.files.items()}
+    audit_dates = {row["case_id"]: row["audit_at"] for row in requests}
+    violations = check_rows(output_rows, expected, evidence_dates, audit_dates)
+    if violations:
+        print(f"Invariant violations: {len(violations)}", file=sys.stderr)
+        for violation in violations[:10]:
+            print(f"  - {violation}", file=sys.stderr)
+    print(f"Wrote {output_path}: {len(output_rows)} cases, validation=ok, invariants={len(violations)}")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Ghost Data Still Exists Deletion Audit Agent")
-    parser.add_argument(
-        "--requests",
-        type=str,
-        default="dataset/deletion_requests.csv",
-        help="Path to deletion requests CSV (default: dataset/deletion_requests.csv)",
-    )
-    parser.add_argument(
-        "--out",
-        type=str,
-        default="output.csv",
-        help="Path to output CSV (default: output.csv)",
-    )
+    parser = argparse.ArgumentParser(description="Ghost Data Still Exists deletion audit agent")
+    parser.add_argument("--requests", default=os.path.join(REPO_ROOT, "dataset", "deletion_requests.csv"))
+    parser.add_argument("--out", default=os.path.join(REPO_ROOT, "output.csv"))
+    parser.add_argument("--explain", default="", help="Print per-resource state for one case id")
     args = parser.parse_args()
-
-    run_pipeline(args.requests, args.out)
+    run_pipeline(args.requests, args.out, explain=args.explain)
 
 
 if __name__ == "__main__":

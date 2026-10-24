@@ -30,9 +30,10 @@ Build your solution in `code/main.py`, or use another language and document its 
 ## How to Run
 
 ### 1. Environment Setup
-Python 3.10+ is supported. The deterministic foundation, loaders, validator, and evaluation harness run with zero external dependencies using the Python standard library.
+Python 3.10+ is supported. The engine uses the Python standard library plus
+`pypdf` for reading PDF evidence. SQL snapshots are executed locally with
+`sqlite3`. No model provider or API key is required.
 
-To set up an optional virtual environment:
 ```bash
 python3 -m venv venv
 source venv/bin/activate
@@ -50,19 +51,62 @@ To specify custom input or output paths:
 python3 code/main.py --requests dataset/sample_deletion_requests.csv --out scratch/test_output.csv
 ```
 
-The pipeline automatically validates the output against the challenge schema, ordering, and state constraints upon completion.
+To inspect how one case was linked and reconstructed:
+```bash
+python3 code/main.py --explain case_01
+```
+
+The pipeline automatically validates the output against the challenge schema, ordering, and state constraints upon completion. It also runs label-free invariant checks (phase order, allowed operation/state pairs, evidence recency, evidence rules) and reports the count.
+
+### Solution architecture
+
+The solution is deterministic and makes no model calls at runtime.
+
+| Module | Responsibility |
+|---|---|
+| `code/ghost/loaders.py` | Load request, identity, audit, activity, rule, and manifest CSVs |
+| `code/ghost/identity.py` | Resolve a request email to current and historical identifiers |
+| `code/ghost/evidence_index.py` | Parse SQL, JSON, logs, text, and PDFs into normalized observations and coverage records |
+| `code/ghost/linker.py` | Link each case to resources through identifiers, catalog links, propagation, and a narrow workflow-window fallback; record the link path and `known_at` time |
+| `code/ghost/state.py` | Reconstruct the state of every linked resource at `audit_at`; reject future observations; use snapshots for absence only when the snapshot is at or after the link |
+| `code/ghost/rules.py` | Apply `deletion_rules.csv` to each reconstructed state |
+| `code/ghost/steps.py` | Build ordered FINDING / REMEDIATION / VERIFICATION steps, deduplicate, and serialize |
+| `code/ghost/invariants.py` | Label-free contract and temporal checks over every output row |
+| `code/ghost/intent.py` | Multilingual deletion-versus-non-deletion request classifier |
+| `code/main.py` | End-to-end CLI and validator |
+
+Workflow statuses and `reported_result` values are treated as claims. Every
+finding and every `COMPLETE` verification cites a participant-visible evidence
+file captured at or before the case's `audit_at`.
 
 ### 3. Run the Evaluation Harness
 To benchmark the agent against the 32 public sample cases and ground truth:
 ```bash
-python3 code/evaluation/run_eval.py
+python3 code/evaluation/run_eval.py --splits
 ```
 
 This evaluates and reports:
 - Overall and per-status accuracy (`COMPLETE`, `INCOMPLETE`, `NOT_APPLICABLE`)
 - Step-level Precision, Recall, and F1 score on exact 6-tuples `(phase, system_id, resource_id, operation, state, evidence_id)`
+- Field-level accuracy for all six step fields
 - Exact sequence accuracy across all cases
+- Dev (24 cases) and held-out (8 cases, `case_id % 4 == 0`) metrics separately
 - Compact failure diffs identifying missing and extraneous steps
+
+Run the participant-authored edge cases:
+```bash
+python3 code/evaluation/custom_cases.py
+```
+
+Run the full 518-case pipeline and regenerate the coverage and runtime report:
+```bash
+python3 code/evaluation/full_run_stats.py
+```
+
+The reports are written to `code/evaluation/evaluation_report.md`,
+`code/evaluation/usage_report.md`, and `code/evaluation/full_run_stats.md`.
+Copies of the two required reports also live in the top-level `evaluation/`
+directory.
 
 
 

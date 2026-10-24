@@ -5,3 +5,5 @@ __pycache__/
 cache/
 .pytest_cache/
 scratch/
+code.zip
+agent-trace.zip
