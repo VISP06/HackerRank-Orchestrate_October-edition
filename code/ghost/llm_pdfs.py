@@ -285,6 +285,39 @@ def pdf_to_observations(
         )
         if new_score > old_score:
             best[obs.resource_id] = obs
+
+    # A document can print an explicit catalog reference without the model
+    # repeating it in a record (for example a statement number on a customer
+    # statement).  The printed reference is still grounded evidence: map it
+    # through the catalog alias and keep a minimal record if nothing else
+    # covered the resource.  File names and bare user ids are handled by the
+    # record path above, not by this fallback.
+    document_lower = (document_text or "").lower()
+    for alias, rid in aliases.items():
+        if not alias or rid in best:
+            continue
+        if re.fullmatch(r"user_\d+", alias) or alias.endswith(".pdf"):
+            continue
+        if alias not in document_lower:
+            continue
+        category = category_for(rid)
+        if not category:
+            continue
+        best[rid] = Observation(
+            file_id=file_id,
+            captured_at=captured_at,
+            observed_at=captured_at,
+            system_id=system_for(rid),
+            store="document",
+            collection="document",
+            record_type=category,
+            resource_id=rid,
+            identifiers={},
+            attrs={"source": "pdf_llm", "catalog_alias": alias},
+            present=True,
+            raw_state="PRESENT",
+            source_kind="pdf",
+        )
     return list(best.values())
 
 

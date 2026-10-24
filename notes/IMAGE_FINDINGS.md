@@ -65,9 +65,12 @@ and evidence ids are participant-visible and kept exact.
 | `case_61` | COMPLETE (0) | INCOMPLETE (4) | `object_19` (`delivery_confirmation_19.pdf`) is present on 13 Feb and belongs only to the subject. |
 | `case_63` | COMPLETE (0) | **unchanged** | `marketing_001` screenshot shows a different person (s***@naver.com). The catalog row is a claim; the primary artifact contradicts it. No subject state is proven, so no finding is invented. |
 
-`case_33` is also unchanged: its screenshot (`export_1260`, 18 Jun) predates
-the 16 Jul request, and the export expired on 25 Jun.  A later export snapshot
-(`evidence_83`, 18 Jul) already proves absence at the 19 Jul audit.
+`case_33` is unchanged by the screenshot: its screenshot (`export_1260`,
+18 Jun) predates the 16 Jul request, and the export expired on 25 Jun.  A later
+export snapshot (`evidence_83`, 18 Jul) already proves absence at the 19 Jul
+audit.  The PDF pass changes this case separately: the customer statement
+captured on 18 Jul at 11:00 proves `export_1842` was created after the workflow
+reported COMPLETE; see `notes/PDF_FINDINGS.md`.
 
 No full-run case has `audit_at` exactly equal to an image capture time.  The
 closest is `case_61` (audit 14 Feb, capture 13 Feb).

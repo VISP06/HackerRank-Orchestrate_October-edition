@@ -23,7 +23,12 @@ from code.ghost.intent import authorizes_deletion
 from code.ghost.invariants import check_rows
 from code.ghost.loaders import load_deletion_requests
 from code.ghost.state import reconstruct_state
+from code.ghost.llm import LLMClient
 from code.main import build_engine, run_pipeline
+
+# The final output run uses the cached vision/PDF extraction.  Intent is a
+# diagnostic cross-check and does not change any row, so it is not needed here.
+LLM_TASKS = "screenshots,pdfs"
 
 
 def _share(count: int, total: int) -> str:
@@ -62,13 +67,13 @@ def main() -> None:
 
     requests = load_deletion_requests(args.requests)
     started = time.perf_counter()
-    run_pipeline(args.requests, args.out)
+    run_pipeline(args.requests, args.out, llm_tasks=LLM_TASKS)
     runtime = time.perf_counter() - started
 
     with open(args.out, "r", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
 
-    index, linker, rules = build_engine()
+    index, linker, rules = build_engine(llm=LLMClient(), llm_tasks=LLM_TASKS)
 
     status_counts = Counter()
     steps_by_status = defaultdict(list)

@@ -32,7 +32,9 @@ Build your solution in `code/main.py`, or use another language and document its 
 ### 1. Environment Setup
 Python 3.10+ is supported. The engine uses the Python standard library plus
 `pypdf` for reading PDF evidence. SQL snapshots are executed locally with
-`sqlite3`. No model provider or API key is required.
+`sqlite3`. The optional vision/PDF/intent layer uses Google Gemini through the
+`google-genai` SDK; every extraction is cached under `code/llm_cache/`, so a
+clean checkout is fully reproducible **without** an API key or network access.
 
 ```bash
 python3 -m venv venv
@@ -40,11 +42,31 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+To re-extract evidence from scratch, set `GEMINI_API_KEY` in the environment
+(or in an uncommitted `.env`) and pass `--fresh`. `GEMINI_MODEL` overrides the
+default model, `gemini-3.1-flash-lite`. Never commit the key.
+
 ### 2. Run the Deletion Audit Pipeline
 To process the 518 evaluation requests and write `output.csv` at the repository root:
 ```bash
 python3 code/main.py
 ```
+
+The default command enables the cached screenshot, PDF, and intent layers. If
+the cache is present it makes zero API calls. To reproduce the submitted output
+using the same task set as the final run:
+```bash
+python3 code/main.py --llm-tasks screenshots,pdfs --out output.csv
+```
+
+Useful switches:
+
+| Flag | Effect |
+|---|---|
+| `--fresh` | Bypass all LLM caches (requires `GEMINI_API_KEY`) |
+| `--skip-llm` | Deterministic-only run; no LLM client, no cache reads |
+| `--llm-tasks screenshots,pdfs` | Disable the intent cross-check |
+| `--explain case_01` | Print linked resources, states, and evidence for one case |
 
 To specify custom input or output paths:
 ```bash
@@ -60,13 +82,20 @@ The pipeline automatically validates the output against the challenge schema, or
 
 ### Solution architecture
 
-The solution is deterministic and makes no model calls at runtime.
+The decision engine is deterministic. The model layer only converts
+screenshots and PDFs into grounded observations and provides a second opinion on
+request intent; it cannot override the deterministic deletion decision.
 
 | Module | Responsibility |
 |---|---|
 | `code/ghost/loaders.py` | Load request, identity, audit, activity, rule, and manifest CSVs |
 | `code/ghost/identity.py` | Resolve a request email to current and historical identifiers |
 | `code/ghost/evidence_index.py` | Parse SQL, JSON, logs, text, and PDFs into normalized observations and coverage records |
+| `code/ghost/llm.py` | Gemini client with disk cache, rate limiting, retries, model fallback, and usage accounting |
+| `code/ghost/llm_screenshots.py` | Vision extraction for the 11 PNGs; strict OCR grounding and catalog-alias resolution |
+| `code/ghost/llm_pdfs.py` | LLM-assisted PDF extraction with exact-token/catalog-alias grounding |
+| `code/ghost/llm_intent.py` | Multilingual intent cross-check (diagnostic only) |
+| `code/ghost/catalog_aliases.py` | Load explicit `LINK_RESOURCE_IDENTITY` aliases used to ground printed references |
 | `code/ghost/linker.py` | Link each case to resources through identifiers, catalog links, propagation, and a narrow workflow-window fallback; record the link path and `known_at` time |
 | `code/ghost/state.py` | Reconstruct the state of every linked resource at `audit_at`; reject future observations; use snapshots for absence only when the snapshot is at or after the link |
 | `code/ghost/rules.py` | Apply `deletion_rules.csv` to each reconstructed state |
@@ -77,7 +106,8 @@ The solution is deterministic and makes no model calls at runtime.
 
 Workflow statuses and `reported_result` values are treated as claims. Every
 finding and every `COMPLETE` verification cites a participant-visible evidence
-file captured at or before the case's `audit_at`.
+file captured at or before the case's `audit_at`. Image and PDF text is handled
+as data, never as instructions.
 
 ### 3. Run the Evaluation Harness
 To benchmark the agent against the 32 public sample cases and ground truth:
@@ -201,13 +231,13 @@ To package `code.zip` from the repository root without bundling the dataset:
 **macOS / Linux:**
 
 ```bash
-zip -r code.zip README.md code -x "*/__pycache__/*" "*/.venv/*" "*/venv/*" "*/node_modules/*" "*/.git/*" "*/.DS_Store"
+zip -r code.zip README.md requirements.txt code -x "*/__pycache__/*" "*/.venv/*" "*/venv/*" "*/node_modules/*" "*/.git/*" "*/.DS_Store"
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-Compress-Archive -Path README.md, code -DestinationPath code.zip -Force
+Compress-Archive -Path README.md, requirements.txt, code -DestinationPath code.zip -Force
 ```
 
 When packaging `code.zip`:

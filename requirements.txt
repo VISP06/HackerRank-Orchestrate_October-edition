@@ -1,1 +1,2 @@
 pypdf>=6.0
+google-genai>=1.0  # optional: only needed for --fresh live extraction

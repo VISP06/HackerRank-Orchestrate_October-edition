@@ -135,6 +135,10 @@ class LLMClient:
         self._init_client()
 
     def _init_client(self) -> None:
+        # Resolve the model name even when no key is present.  Cached results are
+        # keyed by model, so offline runs must use the same key as the run that
+        # populated the cache.
+        self._resolved_model = self._model_name or DEFAULT_MODEL
         if not self.api_key:
             print("[llm] No GEMINI_API_KEY found; LLM features will use cache only.", file=sys.stderr)
             return
@@ -143,7 +147,6 @@ class LLMClient:
             self._client = genai.Client(api_key=self.api_key)
             # Use the explicitly configured model. Availability is verified by
             # the first real call; a 404 falls through MODEL_FALLBACKS.
-            self._resolved_model = self._model_name
             self._available = True
             print(f"[llm] Initialized with model={self._resolved_model}", file=sys.stderr)
         except Exception as e:
