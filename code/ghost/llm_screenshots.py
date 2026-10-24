@@ -13,11 +13,10 @@ admissibility rule (``captured_at <= audit_at``) exact.
 
 from __future__ import annotations
 
-import csv
 import os
-import re
 from typing import Any, Dict, List, Optional, Tuple
 
+from code.ghost.catalog_aliases import load_resource_aliases
 from code.ghost.evidence_index import (
     RESOURCE_RE,
     Observation,
@@ -77,35 +76,6 @@ Rules:
 - absent_indicator is true only for 404, NOT_FOUND, ABSENT, "no results", "deleted", or an equivalent visible absence marker.
 - Extract every row visible in the table. Do not summarize or omit rows.
 - Return ONLY the JSON object."""
-
-
-def load_resource_aliases(dataset_dir: str) -> Dict[str, str]:
-    """Build grounded aliases from explicit data-catalog link rows.
-
-    ``LINK_RESOURCE_IDENTITY`` rows sometimes name a resource together with a
-    stable reference or file name, for example ``object_19
-    (delivery_confirmation_19.pdf)`` or ``tombstone_17 (user_17)``.  Those
-    parenthetical tokens are the only safe way to map a screenshot row that
-    shows a file name or stable user reference to the catalog resource id.
-    """
-    aliases: Dict[str, str] = {}
-    path = os.path.join(dataset_dir, "system_activity.csv")
-    if not os.path.exists(path):
-        return aliases
-    with open(path, "r", encoding="utf-8") as handle:
-        for row in csv.DictReader(handle):
-            if row.get("event_type") != "LINK_RESOURCE_IDENTITY":
-                continue
-            rid = (row.get("resource_id") or "").strip()
-            if not RESOURCE_RE.fullmatch(rid):
-                continue
-            match = re.search(r"\(([^)]+)\)", row.get("details") or "")
-            if not match:
-                continue
-            token = match.group(1).strip()
-            if token and token != rid and not RESOURCE_RE.fullmatch(token):
-                aliases[token.lower()] = rid
-    return aliases
 
 
 def _clean_state(value: Any) -> str:

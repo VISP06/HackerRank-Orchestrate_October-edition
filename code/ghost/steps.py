@@ -115,6 +115,12 @@ def _future_verification_steps(
         category = category_for(resource_id, resource_trace.category)
         if category not in rules:
             continue
+        # An export package is the artifact itself.  If the only artifact was
+        # captured after the cutoff and no pre-cutoff catalog link grounds the
+        # export, it was created later and is not a copy that existed at
+        # ``audit_at``; later evidence must not change the answer.
+        if category == "USER_EXPORT" and not resource_trace.known_at:
+            continue
         system_id = system_for(resource_id, resource_trace.system_id)
         if not system_id:
             continue
