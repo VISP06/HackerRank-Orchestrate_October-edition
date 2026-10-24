@@ -1,0 +1,227 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v1",
+  "input_tokens": 1641,
+  "output_tokens": 1991,
+  "result": {
+    "console_type": "object_storage",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-02-13T08:00:00Z",
+      "2026-02-12T18:42:00Z",
+      "2026-02-11T14:17:00Z",
+      "2026-02-10T09:33:00Z",
+      "2026-02-11T16:05:00Z",
+      "2026-02-10T11:21:00Z",
+      "2026-02-12T10:08:00Z",
+      "2026-02-10T23:14:00Z",
+      "2026-02-12T21:56:00Z",
+      "2026-02-12T18:42:00Z",
+      "2026-02-12T18:39:00Z",
+      "2026-02-12T18:38:00Z"
+    ],
+    "rows": [
+      {
+        "resource_id": "object_delivery_confirmation_19",
+        "record_type": "file",
+        "state_indicators": {
+          "status": "Standard",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": "delivery_confirmation_19.pdf",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "size": "684 KB",
+          "version": "v3"
+        }
+      },
+      {
+        "resource_id": "object_delivery_confirmation_20",
+        "record_type": "file",
+        "state_indicators": {
+          "status": "Standard",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": "delivery_confirmation_20.pdf",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "size": "712 KB",
+          "version": "v1"
+        }
+      },
+      {
+        "resource_id": "object_return_label_4821",
+        "record_type": "file",
+        "state_indicators": {
+          "status": "Standard",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": "return_label_4821.pdf",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "size": "203 KB",
+          "version": "v1"
+        }
+      },
+      {
+        "resource_id": "object_return_label_4876",
+        "record_type": "file",
+        "state_indicators": {
+          "status": "Standard",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": "return_label_4876.pdf",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "size": "198 KB",
+          "version": "v2"
+        }
+      },
+      {
+        "resource_id": "object_invoice_NS_10493",
+        "record_type": "file",
+        "state_indicators": {
+          "status": "Standard",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": "invoice_NS-10493.pdf",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "size": "318 KB",
+          "version": "v1"
+        }
+      },
+      {
+        "resource_id": "object_parcel_damage_7713",
+        "record_type": "file",
+        "state_indicators": {
+          "status": "Standard",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": "parcel_damage_7713.jpg",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "size": "2.4 MB",
+          "version": "v1"
+        }
+      },
+      {
+        "resource_id": "object_customer_export_2026_02_10",
+        "record_type": "file",
+        "state_indicators": {
+          "status": "Standard",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": "customer_export_2026-02-10.zip",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "size": "128 MB",
+          "version": "v1"
+        }
+      },
+      {
+        "resource_id": "object_customer_export_2026_02_12",
+        "record_type": "file",
+        "state_indicators": {
+          "status": "Standard",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": "customer_export_2026-02-12.zip",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "size": "131 MB",
+          "version": "v1"
+        }
+      }
+    ]
+  }
+}

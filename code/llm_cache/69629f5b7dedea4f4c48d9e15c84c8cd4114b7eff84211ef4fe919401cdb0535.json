@@ -1,0 +1,53 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v1",
+  "input_tokens": 1641,
+  "output_tokens": 550,
+  "result": {
+    "console_type": "analytics_view",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-07-13T14:22:00Z",
+      "2026-07-13T14:20:00Z",
+      "2026-07-13T14:17:00Z",
+      "2026-07-13T14:16:00Z",
+      "2026-07-13T14:12:00Z",
+      "2026-07-13T14:22:00Z",
+      "2026-07-13T00:00:00Z",
+      "2026-07-08T00:00:00Z",
+      "2026-06-30T00:00:00Z",
+      "2026-06-22T00:00:00Z",
+      "2026-07-13T14:22:00Z",
+      "2026-04-21T09:14:00Z"
+    ],
+    "rows": [
+      {
+        "resource_id": "user_20",
+        "record_type": "user",
+        "state_indicators": {
+          "status": null,
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "darwish.omar@icloud.com",
+          "name": "Omar Darwish",
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_20",
+          "customer_reference": "analytics_7438"
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "market": "AE",
+          "audience": "Returning shopper",
+          "interest": "Coffee & dining"
+        }
+      }
+    ]
+  }
+}

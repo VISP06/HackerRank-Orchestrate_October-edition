@@ -1,0 +1,47 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v1",
+  "input_tokens": 1667,
+  "output_tokens": 409,
+  "result": {
+    "console_type": "marketing_profile",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-09-15T23:40:00Z",
+      "2026-09-15T23:38:00Z",
+      "2026-09-15T23:35:00Z",
+      "2026-09-15T23:32:00Z"
+    ],
+    "rows": [
+      {
+        "resource_id": "marketing_001",
+        "record_type": "Profile",
+        "state_indicators": {
+          "status": "Live",
+          "http_code": null,
+          "enabled": true,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "sj.park@naver.com",
+          "name": "Soo-jin Park",
+          "phone": "+82 10-5837-9451",
+          "email_hash": null,
+          "user_id": "marketing_001",
+          "customer_reference": null
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "market": "South Korea",
+          "language": "Korean",
+          "email_opt_in": "Yes",
+          "sms_opt_in": "No",
+          "last_refreshed": "15 Sep 2026 23:40 UTC"
+        }
+      }
+    ]
+  }
+}

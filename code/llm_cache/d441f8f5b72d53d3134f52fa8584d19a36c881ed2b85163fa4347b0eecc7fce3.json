@@ -1,0 +1,51 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v1",
+  "input_tokens": 1655,
+  "output_tokens": 420,
+  "result": {
+    "console_type": "support_ticket",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-05-22T00:00:00",
+      "2026-05-23T00:00:00",
+      "2026-05-24T07:46:00",
+      "2026-05-24T08:15:00",
+      "2026-05-26T00:00:00"
+    ],
+    "rows": [
+      {
+        "resource_id": "support_5034",
+        "record_type": "ticket",
+        "state_indicators": {
+          "status": "Normal priority",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "kagyeman8947@fastmail.com",
+          "name": "Kofi Agyeman",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": "ORD-20265034"
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "ticket_title": "Where is my delivery?",
+          "assigned_agent": "Maya Chen",
+          "tags": [
+            "Delivery",
+            "Tracking",
+            "Order update"
+          ],
+          "sla": "01:42"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v1",
+  "input_tokens": 1641,
+  "output_tokens": 1114,
+  "result": {
+    "console_type": "backup_restore",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-04-26T02:00:00Z",
+      "2026-03-29T00:00:00Z",
+      "2026-07-26T00:00:00Z",
+      "2026-04-25T00:00:00Z",
+      "2026-04-24T00:00:00Z",
+      "2026-04-22T00:00:00Z"
+    ],
+    "rows": [
+      {
+        "resource_id": "backup_9291",
+        "record_type": "Archive",
+        "state_indicators": {
+          "status": "Archive",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "bluepeakco@outlook.com",
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "region": "ap-southeast-1",
+          "created": "26 Apr 02:00",
+          "size": "102.3 GB",
+          "encryption": "AES-256"
+        }
+      },
+      {
+        "resource_id": "backup_9288",
+        "record_type": "Archive",
+        "state_indicators": {
+          "status": "Archive",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "miller.logistics@company.com",
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "region": "us-west-2",
+          "created": "26 Apr 02:00",
+          "size": "67.1 GB",
+          "encryption": "AES-256"
+        }
+      },
+      {
+        "resource_id": "backup_9287",
+        "record_type": "Archive",
+        "state_indicators": {
+          "status": "Archive",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "areed1433@gmail.com",
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "region": "eu-west-1",
+          "created": "26 Apr 02:00",
+          "size": "84.7 GB",
+          "encryption": "AES-256"
+        }
+      },
+      {
+        "resource_id": "backup_9286",
+        "record_type": "Archive",
+        "state_indicators": {
+          "status": "Archive",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "summit-retail@company.com",
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "region": "us-east-1",
+          "created": "26 Apr 02:00",
+          "size": "91.4 GB",
+          "encryption": "AES-256"
+        }
+      }
+    ]
+  }
+}

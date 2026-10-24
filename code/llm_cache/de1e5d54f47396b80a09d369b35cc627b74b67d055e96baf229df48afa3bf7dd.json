@@ -1,0 +1,126 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v1",
+  "input_tokens": 1667,
+  "output_tokens": 1118,
+  "result": {
+    "console_type": "customer_reference_registry",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2024-01-11T08:42:00Z",
+      "2026-03-10T07:18:00Z",
+      "2024-01-11T08:45:00Z",
+      "2024-02-14T12:16:00Z",
+      "2024-06-03T09:27:00Z",
+      "2024-08-22T15:03:00Z",
+      "2026-03-10T00:00:00Z",
+      "2024-08-22T00:00:00Z",
+      "2024-06-03T00:00:00Z",
+      "2024-02-14T00:00:00Z",
+      "2024-01-11T00:00:00Z"
+    ],
+    "rows": [
+      {
+        "resource_id": "ORD-20263245",
+        "record_type": "Orders",
+        "state_indicators": {
+          "status": "Active",
+          "http_code": null,
+          "enabled": true,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_17",
+          "customer_reference": "ORD-20263245"
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "system": "Orders",
+          "relationship": "Linked to customer"
+        }
+      },
+      {
+        "resource_id": "CS-3245",
+        "record_type": "Support",
+        "state_indicators": {
+          "status": "Active",
+          "http_code": null,
+          "enabled": true,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_17",
+          "customer_reference": "CS-3245"
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "system": "Support",
+          "relationship": "Linked to customer"
+        }
+      },
+      {
+        "resource_id": "CS-3378",
+        "record_type": "Support",
+        "state_indicators": {
+          "status": "Active",
+          "http_code": null,
+          "enabled": true,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_17",
+          "customer_reference": "CS-3378"
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "system": "Support",
+          "relationship": "Linked to customer"
+        }
+      },
+      {
+        "resource_id": "FIN-7742",
+        "record_type": "Finance",
+        "state_indicators": {
+          "status": "Active",
+          "http_code": null,
+          "enabled": true,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_17",
+          "customer_reference": "FIN-7742"
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "system": "Finance",
+          "relationship": "Linked to customer"
+        }
+      }
+    ]
+  }
+}

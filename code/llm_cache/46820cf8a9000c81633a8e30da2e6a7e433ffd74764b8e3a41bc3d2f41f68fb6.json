@@ -1,0 +1,129 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v1",
+  "input_tokens": 1641,
+  "output_tokens": 1112,
+  "result": {
+    "console_type": "connector_management",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-08-07T08:00:00Z",
+      "2026-08-07T07:59:42",
+      "2026-08-07T07:59:36",
+      "2026-08-07T07:59:28",
+      "2026-08-07T07:59:13",
+      "2026-08-07T07:59:42",
+      "2026-08-07T07:58:10",
+      "2026-08-07T07:56:44",
+      "2026-08-07T07:55:02"
+    ],
+    "rows": [
+      {
+        "resource_id": "data_flow_1121",
+        "record_type": "connector",
+        "state_indicators": {
+          "status": "Healthy",
+          "http_code": 200,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "jain.aditi@gmail.com",
+          "name": "data_flow_1121",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "destination": "customer_analytics_warehouse",
+          "mode": "Continuous",
+          "events_per_hour": 1284,
+          "owner": "Data Platform"
+        }
+      },
+      {
+        "resource_id": "data_flow_9846",
+        "record_type": "connector",
+        "state_indicators": {
+          "status": null,
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "lucia-torres@gmail.com",
+          "name": "data_flow_9846",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "destination": "customer_analytics_warehouse",
+          "mode": "Continuous",
+          "events_per_hour": 842
+        }
+      },
+      {
+        "resource_id": "order_notifications",
+        "record_type": "connector",
+        "state_indicators": {
+          "status": null,
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": "Order notifications",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "destination": "notification_service",
+          "mode": "Continuous",
+          "events_per_hour": 650
+        }
+      },
+      {
+        "resource_id": "delivery_tracking",
+        "record_type": "connector",
+        "state_indicators": {
+          "status": null,
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": "Delivery tracking",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "destination": "logistics_warehouse",
+          "mode": "Continuous",
+          "events_per_hour": 420
+        }
+      }
+    ]
+  }
+}

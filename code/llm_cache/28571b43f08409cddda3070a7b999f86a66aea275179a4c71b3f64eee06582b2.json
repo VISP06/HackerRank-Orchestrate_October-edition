@@ -1,0 +1,172 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v1",
+  "input_tokens": 1667,
+  "output_tokens": 1341,
+  "result": {
+    "console_type": "security_audit",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-08-25T04:03:00Z"
+    ],
+    "rows": [
+      {
+        "resource_id": "audit_record_003",
+        "record_type": "Account lifecycle",
+        "state_indicators": {
+          "status": "Valid",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_03",
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "event": "Account closure recorded",
+          "actor": "Automated workflow",
+          "time": "25 Aug 04:03"
+        }
+      },
+      {
+        "resource_id": "audit_record_002",
+        "record_type": "Session management",
+        "state_indicators": {
+          "status": "Valid",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_03",
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "event": "Session revoked",
+          "actor": "Security system",
+          "time": "25 Aug 03:21"
+        }
+      },
+      {
+        "resource_id": "audit_record_001",
+        "record_type": "Authentication",
+        "state_indicators": {
+          "status": "Valid",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_03",
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "event": "Recovery challenge completed",
+          "actor": "User (self)",
+          "time": "24 Aug 16:14"
+        }
+      },
+      {
+        "resource_id": "audit_record_006",
+        "record_type": "Profile update",
+        "state_indicators": {
+          "status": "Valid",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_03",
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "event": "Email change confirmed",
+          "actor": "User (self)",
+          "time": "22 Aug 11:27"
+        }
+      },
+      {
+        "resource_id": "audit_record_005",
+        "record_type": "Authentication",
+        "state_indicators": {
+          "status": "Valid",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_03",
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "event": "Login from new device",
+          "actor": "User (self)",
+          "time": "20 Aug 09:42"
+        }
+      },
+      {
+        "resource_id": "audit_record_004",
+        "record_type": "Authentication",
+        "state_indicators": {
+          "status": "Valid",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": null,
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": "user_03",
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "event": "Password changed",
+          "actor": "User (self)",
+          "time": "18 Aug 14:05"
+        }
+      }
+    ]
+  }
+}

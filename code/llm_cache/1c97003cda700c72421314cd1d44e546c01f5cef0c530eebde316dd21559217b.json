@@ -1,0 +1,107 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v1",
+  "input_tokens": 1667,
+  "output_tokens": 887,
+  "result": {
+    "console_type": "export_console",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-06-20T14:18:00Z",
+      "2026-06-18T06:42:00Z",
+      "2026-06-17T11:03:00Z",
+      "2026-06-16T09:27:00Z"
+    ],
+    "rows": [
+      {
+        "resource_id": "export_1261",
+        "record_type": null,
+        "state_indicators": {
+          "status": "Collecting",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "marcus.lee@northstar.shop",
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": "customer_export_1261.zip"
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {}
+      },
+      {
+        "resource_id": "export_1260",
+        "record_type": null,
+        "state_indicators": {
+          "status": "Ready",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "ingrid.dahl@outlook.com",
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": "customer_export_1260.zip"
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {}
+      },
+      {
+        "resource_id": "export_1259",
+        "record_type": null,
+        "state_indicators": {
+          "status": "Packaging",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "sara.kim@northstar.shop",
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": "customer_export_1259.zip"
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {}
+      },
+      {
+        "resource_id": "export_1258",
+        "record_type": null,
+        "state_indicators": {
+          "status": "Ready",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "daniel.park@northstar.shop",
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": "customer_export_1258.zip"
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {}
+      }
+    ]
+  }
+}

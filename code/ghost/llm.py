@@ -35,6 +35,12 @@ PROMPT_VERSIONS = {
     "intent_classify": "v1",
 }
 
+# Exact model selected after listing the key's models and testing a vision call.
+# Override with GEMINI_MODEL. The API still lists gemini-2.5-flash-lite but it
+# returns 404 ("no longer available to new users"), so it is not selected.
+DEFAULT_MODEL = "gemini-3.1-flash-lite"
+MODEL_FALLBACKS = ["gemini-3.5-flash-lite", "gemini-3.8-flash"]
+
 
 @dataclass
 class UsageRecord:
@@ -117,13 +123,14 @@ class LLMClient:
         fresh: bool = False,
     ) -> None:
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
-        self._model_name = model_name or os.environ.get("GEMINI_MODEL", "")
+        self._model_name = model_name or os.environ.get("GEMINI_MODEL", "") or DEFAULT_MODEL
         self.fresh = fresh
         self._client = None
         self._resolved_model: str = ""
         self._available = False
         self._last_call_time: float = 0.0
         self._min_interval: float = 4.0  # seconds between calls (free tier: 15 RPM)
+        self._fallbacks = list(MODEL_FALLBACKS)
         self.usage = UsageSummary()
         self._init_client()
 
@@ -134,11 +141,9 @@ class LLMClient:
         try:
             from google import genai
             self._client = genai.Client(api_key=self.api_key)
-            # Resolve model name
-            if self._model_name:
-                self._resolved_model = self._model_name
-            else:
-                self._resolved_model = self._pick_model()
+            # Use the explicitly configured model. Availability is verified by
+            # the first real call; a 404 falls through MODEL_FALLBACKS.
+            self._resolved_model = self._model_name
             self._available = True
             print(f"[llm] Initialized with model={self._resolved_model}", file=sys.stderr)
         except Exception as e:
@@ -146,33 +151,8 @@ class LLMClient:
             self._available = False
 
     def _pick_model(self) -> str:
-        """List available models and pick the cheapest vision-capable Flash-class model."""
-        preferred = [
-            "gemini-3.8-flash",
-            "gemini-3.5-flash",
-            "gemini-2.0-flash-lite",
-            "gemini-2.0-flash",
-        ]
-        try:
-            available = []
-            for model in self._client.models.list():
-                name = model.name
-                if name.startswith("models/"):
-                    name = name[len("models/"):]
-                available.append(name)
-            print(f"[llm] Available models: {len(available)} total", file=sys.stderr)
-            for pref in preferred:
-                if pref in available:
-                    print(f"[llm] Selected model: {pref}", file=sys.stderr)
-                    return pref
-            # Fallback: any flash model
-            for name in available:
-                if "flash" in name.lower():
-                    print(f"[llm] Fallback model: {name}", file=sys.stderr)
-                    return name
-        except Exception as e:
-            print(f"[llm] Could not list models: {e}", file=sys.stderr)
-        return "gemini-2.0-flash"
+        """Return the configured model (kept for callers that inspect choice)."""
+        return self._model_name or DEFAULT_MODEL
 
     @property
     def model_name(self) -> str:
@@ -316,12 +296,32 @@ class LLMClient:
             return None
 
         try:
-            text, in_tok, out_tok = self._call_with_retry(
-                prompt=prompt,
-                image_bytes=image_bytes,
-                image_mime=image_mime,
-                task=task,
-            )
+            try:
+                text, in_tok, out_tok = self._call_with_retry(
+                    prompt=prompt,
+                    image_bytes=image_bytes,
+                    image_mime=image_mime,
+                    task=task,
+                )
+            except Exception as exc:
+                # A listed model can still be closed to new keys. Move to the
+                # next Flash-class fallback and recompute the cache key so the
+                # result is stored under the model that actually served it.
+                if "404" in str(exc) and self._fallbacks:
+                    self._resolved_model = self._fallbacks.pop(0)
+                    print(
+                        f"[llm] Model unavailable ({exc}); retrying with {self._resolved_model}",
+                        file=sys.stderr,
+                    )
+                    key = _cache_key(self._resolved_model, prompt_version, cache_input)
+                    text, in_tok, out_tok = self._call_with_retry(
+                        prompt=prompt,
+                        image_bytes=image_bytes,
+                        image_mime=image_mime,
+                        task=task,
+                    )
+                else:
+                    raise
             # Parse JSON response
             # Strip markdown code fences if present
             cleaned = text.strip()
@@ -351,8 +351,8 @@ class LLMClient:
         """Estimate cost from usage summary and pricing config."""
         pricing = _load_pricing()
         model_pricing = pricing.get(self._resolved_model, pricing.get("default", {}))
-        input_rate = model_pricing.get("input_per_1m", 0.15)
-        output_rate = model_pricing.get("output_per_1m", 0.60)
+        input_rate = model_pricing.get("input_per_1m", 0.25)
+        output_rate = model_pricing.get("output_per_1m", 1.50)
 
         input_cost = (self.usage.total_input_tokens / 1_000_000) * input_rate
         output_cost = (self.usage.total_output_tokens / 1_000_000) * output_rate
@@ -368,7 +368,10 @@ class LLMClient:
             "input_cost_usd": round(input_cost, 6),
             "output_cost_usd": round(output_cost, 6),
             "total_cost_usd": round(total_cost, 6),
-            "pricing_source": f"input=${input_rate}/1M, output=${output_rate}/1M",
+            "pricing_source": (
+                "https://ai.google.dev/gemini-api/docs/pricing (checked 2026-10-24): "
+                f"input=${input_rate}/1M, output=${output_rate}/1M"
+            ),
             "by_task": dict(self.usage.by_task),
         }
 

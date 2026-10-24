@@ -1,0 +1,73 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v1",
+  "input_tokens": 1667,
+  "output_tokens": 660,
+  "result": {
+    "console_type": "search_inspector",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-09-01T06:00:14Z",
+      "2026-09-01T05:58:21Z",
+      "2026-09-01T05:55:03Z",
+      "2026-09-01T05:58:21Z",
+      "2026-09-01T05:58:21Z",
+      "2026-09-01T06:00:14Z",
+      "2026-09-01T05:42:03Z",
+      "2026-09-01T05:31:18Z"
+    ],
+    "rows": [
+      {
+        "resource_id": "search_428",
+        "record_type": null,
+        "state_indicators": {
+          "status": null,
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "g.silva76@gmail.com",
+          "name": "Gabriel Silva",
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": "user_13"
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "score": "9.84",
+          "last_indexed": "05:58:21 UTC"
+        }
+      },
+      {
+        "resource_id": "search_1874",
+        "record_type": null,
+        "state_indicators": {
+          "status": null,
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "g.silva76.jr@gmail.com",
+          "name": null,
+          "phone": null,
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "score": "4.12",
+          "last_indexed": "05:55:03 UTC"
+        }
+      }
+    ]
+  }
+}

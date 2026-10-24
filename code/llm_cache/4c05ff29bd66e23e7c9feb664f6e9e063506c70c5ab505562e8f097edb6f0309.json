@@ -1,0 +1,71 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "task": "screenshot_extract",
+  "prompt_version": "v1",
+  "input_tokens": 1655,
+  "output_tokens": 646,
+  "result": {
+    "console_type": "customer_operations",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-09-24T09:14:00",
+      "2026-09-12T00:00:00",
+      "2026-08-28T00:00:00",
+      "2026-01-12T00:00:00"
+    ],
+    "rows": [
+      {
+        "resource_id": "ORD-20265762",
+        "record_type": "order",
+        "state_indicators": {
+          "status": "Delivered - 18 Sep",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "haruka.s1838@zoho.com",
+          "name": "Haruka Sato",
+          "phone": "+81 90 7610 2507",
+          "email_hash": null,
+          "user_id": "user_11",
+          "customer_reference": "account_5762"
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "item": "Ceramic coffee set",
+          "qty": "1",
+          "total": "JPY 8,900"
+        }
+      },
+      {
+        "resource_id": "ORD-20265518",
+        "record_type": "order",
+        "state_indicators": {
+          "status": "Returned - 03 Sep",
+          "http_code": null,
+          "enabled": null,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "haruka.s1838@zoho.com",
+          "name": "Haruka Sato",
+          "phone": "+81 90 7610 2507",
+          "email_hash": null,
+          "user_id": "user_11",
+          "customer_reference": "account_5762"
+        },
+        "raw_state": "PRESENT",
+        "extra_fields": {
+          "item": "Travel backpack",
+          "qty": "1",
+          "total": "JPY 12,400"
+        }
+      }
+    ]
+  }
+}
