@@ -339,13 +339,18 @@ def main() -> None:
     parser.add_argument(
         "--splits",
         action="store_true",
-        help="Also report dev (case index % 4 != 0) and held-out (index % 4 == 0) metrics.",
+        help="Also report dev (case index % 4 != 0) and held-out (case index % 4 == 0) metrics.",
+    )
+    parser.add_argument(
+        "--skip-llm",
+        action="store_true",
+        help="Run the pipeline without LLM features (deterministic baseline).",
     )
     args = parser.parse_args()
 
     pred_file = args.pred
     if not pred_file:
-        run_pipeline(args.requests, args.out)
+        run_pipeline(args.requests, args.out, skip_llm=args.skip_llm)
         pred_file = args.out
 
     evaluate(pred_file, args.ground_truth)

@@ -1,0 +1,49 @@
+{
+  "model": "gemini-3.8-flash",
+  "task": "screenshot_extract",
+  "prompt_version": "v1",
+  "input_tokens": 1667,
+  "output_tokens": 386,
+  "result": {
+    "console_type": "marketing_profile",
+    "banner_text": null,
+    "visible_timestamps": [
+      "2026-09-15T23:40:00Z"
+    ],
+    "rows": [
+      {
+        "resource_id": "marketing_001",
+        "record_type": "marketing_profile",
+        "state_indicators": {
+          "status": "Live",
+          "http_code": null,
+          "enabled": true,
+          "restore_allowed": null,
+          "retention_status": null,
+          "absent_indicator": false
+        },
+        "identifiers": {
+          "email": "sj.park@naver.com",
+          "name": "Soo-jin Park",
+          "phone": "+82 10-5837-9451",
+          "email_hash": null,
+          "user_id": null,
+          "customer_reference": null
+        },
+        "raw_state": "ACTIVE",
+        "extra_fields": {
+          "market": "South Korea",
+          "language": "Korean",
+          "email_opt_in": "Yes",
+          "sms_opt_in": "No",
+          "audience": "Returning customers — East Asia",
+          "segments": "Repeat customer · Home & lifestyle · Mobile shopper",
+          "preferred_categories": "Desk accessories · Drinkware",
+          "last_campaign": "Autumn offers",
+          "open_rate": "32.4%",
+          "click_rate": "6.8%"
+        }
+      }
+    ]
+  }
+}

@@ -1,10 +1,22 @@
 #!/usr/bin/env python3
-"""Ghost Data Still Exists - deterministic deletion audit pipeline."""
+"""Ghost Data Still Exists - deletion audit pipeline.
+
+The deterministic engine handles all decisions.  An optional LLM layer adds:
+  (a) screenshot extraction (11 PNGs → Observations)
+  (b) enhanced PDF extraction (4 PDFs → Observations)
+  (c) intent cross-check (second opinion on deletion vs non-deletion)
+
+LLM results are disk-cached so subsequent runs are offline-reproducible.
+If no API key or network is available, the pipeline falls back to cache
+or runs without LLM features.
+"""
 
 import argparse
 import csv
+import json
 import os
 import sys
+import time
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO_ROOT not in sys.path:
@@ -25,11 +37,72 @@ def _dataset_path(name: str) -> str:
     return os.path.join(REPO_ROOT, "dataset", name)
 
 
-def build_engine(dataset_dir: str = ""):
+def _load_dotenv() -> None:
+    """Load .env from repo root if present (never print values)."""
+    env_path = os.path.join(REPO_ROOT, ".env")
+    if os.path.exists(env_path):
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, _, value = line.partition("=")
+                key = key.strip()
+                value = value.strip().strip('"').strip("'")
+                if key and key not in os.environ:
+                    os.environ[key] = value
+
+
+def build_engine(dataset_dir: str = "", llm=None):
+    """Build the evidence index, linker, and rules.
+
+    If an LLM client is provided, screenshot and enhanced PDF observations
+    are extracted and merged into the index.
+    """
     dataset_dir = dataset_dir or os.path.join(REPO_ROOT, "dataset")
+
+    # Load base evidence index (deterministic parsers)
     index = load_evidence_index(
         os.path.join(dataset_dir, "evidence_files.csv"), dataset_dir
     )
+
+    # LLM-enhanced extraction
+    screenshot_results = []
+    pdf_results = []
+    if llm is not None:
+        manifest_path = os.path.join(dataset_dir, "evidence_files.csv")
+        manifest = list(csv.DictReader(open(manifest_path, "r", encoding="utf-8")))
+
+        # Screenshot extraction
+        from code.ghost.llm_screenshots import extract_all_screenshots
+        screenshot_obs, screenshot_results = extract_all_screenshots(llm, manifest, dataset_dir)
+        for obs in screenshot_obs:
+            index.add(obs)
+
+        # Enhanced PDF extraction
+        from code.ghost.llm_pdfs import extract_all_pdfs
+        pdf_obs, pdf_results = extract_all_pdfs(llm, manifest, dataset_dir)
+        # Merge LLM PDF observations: for files that the deterministic parser
+        # already handled, only add new resource IDs not already present.
+        existing_pdf_resources = set()
+        for obs in index.observations:
+            if obs.source_kind == "pdf":
+                existing_pdf_resources.add((obs.file_id, obs.resource_id))
+        for obs in pdf_obs:
+            if (obs.file_id, obs.resource_id) not in existing_pdf_resources:
+                index.add(obs)
+
+        # Rebuild index after adding new observations
+        index.build()
+
+    # Keep extraction reports available to callers without changing the
+    # long-standing (index, linker, rules) return contract used by the
+    # evaluation scripts.
+    index.llm_extraction = {
+        "screenshots": screenshot_results,
+        "pdfs": pdf_results,
+    }
+
     linker = CaseLinker(
         index,
         load_activity_rows(os.path.join(dataset_dir, "system_activity.csv")),
@@ -48,9 +121,49 @@ def audit_case(case, linker, index, rules):
     return status, steps, trace, states
 
 
-def run_pipeline(requests_path: str, output_path: str, explain: str = "") -> None:
+def run_pipeline(
+    requests_path: str,
+    output_path: str,
+    explain: str = "",
+    fresh: bool = False,
+    skip_llm: bool = False,
+) -> dict:
+    """Run the full pipeline. Returns a summary dict."""
+    _load_dotenv()
+
     requests = load_deletion_requests(requests_path)
-    index, linker, rules = build_engine()
+
+    # Initialize LLM client (optional)
+    llm = None
+    intent_classifications = []
+    intent_disagreements = []
+    if not skip_llm:
+        from code.ghost.llm import LLMClient
+        llm = LLMClient(fresh=fresh)
+
+    index, linker, rules = build_engine(llm=llm)
+    extraction = getattr(index, "llm_extraction", {})
+    screenshot_results = extraction.get("screenshots", [])
+    pdf_results = extraction.get("pdfs", [])
+
+    # Intent cross-check (Task 4)
+    if llm is not None:
+        from code.ghost.llm_intent import classify_all_intents
+        intent_classifications, intent_disagreements = classify_all_intents(
+            llm, requests, authorizes_deletion
+        )
+        if intent_disagreements:
+            print(
+                f"[intent] {len(intent_disagreements)} disagreement(s) between "
+                f"deterministic and LLM classifiers",
+                file=sys.stderr,
+            )
+            for d in intent_disagreements:
+                print(
+                    f"  {d['case_ids']}: det={d['deterministic']} llm={d['llm']} "
+                    f"reason={d['reason'][:60]}",
+                    file=sys.stderr,
+                )
 
     output_rows = []
     for req in requests:
@@ -103,7 +216,36 @@ def run_pipeline(requests_path: str, output_path: str, explain: str = "") -> Non
         print(f"Invariant violations: {len(violations)}", file=sys.stderr)
         for violation in violations[:10]:
             print(f"  - {violation}", file=sys.stderr)
-    print(f"Wrote {output_path}: {len(output_rows)} cases, validation=ok, invariants={len(violations)}")
+
+    # Status distribution
+    from collections import Counter
+    status_dist = Counter(row["deletion_status"] for row in output_rows)
+    step_count = sum(len(json.loads(row["steps_json"])) for row in output_rows)
+
+    summary = {
+        "cases": len(output_rows),
+        "status_distribution": dict(status_dist),
+        "total_steps": step_count,
+        "invariant_violations": len(violations),
+        "screenshot_results": screenshot_results,
+        "pdf_results": pdf_results,
+        "intent_disagreements": intent_disagreements,
+        "intent_classifications_count": len(intent_classifications),
+    }
+
+    # Usage accounting
+    if llm is not None:
+        summary["llm_usage"] = llm.estimate_cost()
+
+    print(
+        f"Wrote {output_path}: {len(output_rows)} cases, "
+        f"{status_dist.get('COMPLETE', 0)} COMPLETE / "
+        f"{status_dist.get('INCOMPLETE', 0)} INCOMPLETE / "
+        f"{status_dist.get('NOT_APPLICABLE', 0)} NOT_APPLICABLE, "
+        f"{step_count} steps, validation=ok, invariants={len(violations)}"
+    )
+
+    return summary
 
 
 def main() -> None:
@@ -111,8 +253,26 @@ def main() -> None:
     parser.add_argument("--requests", default=os.path.join(REPO_ROOT, "dataset", "deletion_requests.csv"))
     parser.add_argument("--out", default=os.path.join(REPO_ROOT, "output.csv"))
     parser.add_argument("--explain", default="", help="Print per-resource state for one case id")
+    parser.add_argument("--fresh", action="store_true", help="Bypass all LLM caches for a fresh run")
+    parser.add_argument("--skip-llm", action="store_true", help="Skip all LLM features (deterministic only)")
     args = parser.parse_args()
-    run_pipeline(args.requests, args.out, explain=args.explain)
+    summary = run_pipeline(
+        args.requests, args.out,
+        explain=args.explain,
+        fresh=args.fresh,
+        skip_llm=args.skip_llm,
+    )
+
+    # Print summary
+    if summary.get("llm_usage"):
+        usage = summary["llm_usage"]
+        print(f"\nLLM Usage: model={usage['model']}, calls={usage['total_calls']}, "
+              f"cache_hits={usage['cache_hits']}, "
+              f"tokens={usage['total_input_tokens']}in/{usage['total_output_tokens']}out, "
+              f"cost=${usage['total_cost_usd']:.4f}")
+        for task, stats in usage.get("by_task", {}).items():
+            print(f"  {task}: calls={stats['calls']}, cache_hits={stats.get('cache_hits', 0)}, "
+                  f"tokens={stats['input_tokens']}in/{stats['output_tokens']}out")
 
 
 if __name__ == "__main__":
