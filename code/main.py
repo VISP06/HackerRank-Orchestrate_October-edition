@@ -44,7 +44,7 @@ def audit_case(case, linker, index, rules):
     audit_at = case.get("audit_at", "")
     trace = linker.link_case(case, audit_at)
     states = reconstruct_state(index, trace, audit_at)
-    status, steps = build_case_result(states, rules, audit_at)
+    status, steps = build_case_result(states, rules, audit_at, trace)
     return status, steps, trace, states
 
 

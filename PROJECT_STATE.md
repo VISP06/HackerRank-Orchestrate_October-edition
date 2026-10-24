@@ -61,7 +61,7 @@ Under `dataset/`:
 - CSVs: deletion_requests, sample_deletion_requests, sample_output (answer key for samples), user_identities, user_audit_log, system_activity, deletion_rules, evidence_files (manifest), output (blank template)
 - `dataset/evidence/` subfolders: `databases/` (SQL snapshots), `documents/` (PDF), `images/` (PNG), `logs/` (log files), `records/` (JSON)
 
-The inventory, table-to-category map, prefix-to-system map, and observed evidence formats are recorded in `notes/DATA_PROFILE.md`. The manifest has 94 files; the evidence index currently produces 2,648 observations across 1,896 resource ids, with 439 coverage records.
+The inventory, table-to-category map, prefix-to-system map, and observed evidence formats are recorded in `notes/DATA_PROFILE.md`. The manifest has 94 files; the evidence index currently produces 2,857 observations across 2,032 resource ids, with 454 coverage records. Category-by-format coverage is in `notes/COVERAGE.md`.
 
 ## 6. Architecture (deterministic, no runtime LLM)
 Principle: every decision is reproducible code over participant-visible data.
@@ -69,7 +69,7 @@ Principle: every decision is reproducible code over participant-visible data.
 1. **Load**: parse all CSVs into structured tables.
 2. **Evidence extraction**: parse SQL snapshots with `sqlite3`, JSON bundles/exports/dumps recursively, six log format families with trace grouping, pipe-delimited handover text, and PDFs with `pypdf`. Images are not OCR'd and are never used as proof.
 3. **Identity resolution**: per case, gather current + historical emails, phones, hashes, and stable `user_id` from `user_identities.csv` and `user_audit_log.csv`.
-4. **Linking**: direct identifier matches, `LINK_RESOURCE_IDENTITY` catalog rows, explicit downstream resource propagation, and a unique ±30-minute workflow-window account fallback. Every resource records its link path and `known_at`.
+4. **Linking**: direct identifier matches (including identifiers seen only in post-cutoff artifacts), `LINK_RESOURCE_IDENTITY` catalog rows, explicit downstream resource propagation, resource-scoped evidence attach once an id is grounded, and a unique ±15-minute workflow-dispatch rule for `account_*` and `analytics_*`. Ambiguous dispatch batches are rejected. Every resource records its link path and `known_at`.
 5. **State reconstruction**: newest eligible observation at `audit_at`; snapshot-based absence only when the snapshot is at or after `known_at`; one current account profile per subject.
 6. **Rule engine**: apply `deletion_rules.csv` per category to produce violations, required redaction/anonymization, retention, or tombstone treatment.
 7. **Status decision**: NOT_APPLICABLE (no deletion requested) / INCOMPLETE (any finding) / COMPLETE.
@@ -82,7 +82,8 @@ Principle: every decision is reproducible code over participant-visible data.
 - Runtime: fully deterministic. All evidence parsing is local (`sqlite3`, `json`, regex log parsers, `pypdf` for PDFs). No model calls, zero tokens, zero cost.
 - Builder harness: OpenCode (`tool=opencode`) with `model=deepseek-v4.1-flash-free`; one builder at a time; commit after each working step.
 - State model: normalized observations carry `file_id`, capture/observation time, system, store, category, resource id, identifiers, attributes, presence, and raw state. State at `audit_at` is the newest eligible observation; absence may come from a system snapshot only when the snapshot is at or after the link's `known_at`.
-- Linking: current/historical emails, phones, email hashes, stable `user_id`, `LINK_RESOURCE_IDENTITY` catalog rows, explicit downstream propagation, and a unique ±30-minute workflow-window account fallback. No numeric `user_N -> account_N` derivation.
+- Linking: current/historical emails, phones, email hashes, stable `user_id`, `LINK_RESOURCE_IDENTITY` catalog rows, explicit downstream propagation, resource-scoped evidence attach, and a unique ±15-minute `deletion_worker` dispatch rule for account/analytics ids. Ambiguity is rejected; no numeric `user_N -> account_N` derivation. Rule sweep and precision/ambiguity numbers: `notes/LINK_RULE_STUDY.md`.
+- Evidence-sparse COMPLETE cases: keep the status and an empty step list, and mark the row `low_evidence` in the full-run report. The eight remaining families are analysed in `notes/ZERO_STEP_FAMILIES.md`.
 - Policy: `deletion_rules.csv` loaded at runtime; workflow status and `reported_result` are never proof.
 - Evaluation: 32 samples split into dev (24) and held-out (8, `case_id % 4 == 0`); label-free invariants over every output row; six participant-authored edge cases.
 
@@ -120,6 +121,7 @@ PROJECT_STATE.md   this file
 - [Oct 24] Repo scaffolded (code/, dataset/, evaluation/, logs/, venv/, .env, .gitignore, requirements.txt). Problem statement read. PRD drafted. No code yet.
 - [Oct 24 16:00] Completed comprehensive dataset profiling (sections 1-15 in notes/DATA_PROFILE.md): system_activity event analysis, 4 sample case linking traces, prefix-to-category mapping table, evidence manifest audit (94/94 match), evidence-id temporal and containment rules verified across all 32 samples, and multilingual verification (English, Portuguese, Spanish, French, Korean, Japanese).
 - [Oct 24 17:30] Built and integrated the deterministic engine: evidence index (2,311 observations / 1,558 resources / 439 coverage records over 94 files), identity clustering, linker with link paths and `known_at`, point-in-time state reconstruction, policy engine, step builder, multilingual intent classifier, and label-free invariants. Sample status 32/32; step P=1.0000, R=0.8497, F1=0.9188; dev R=0.8591, held-out R=0.8182. Full 518-case run: 181 COMPLETE / 327 INCOMPLETE / 10 NOT_APPLICABLE, 2,466 steps, 0 invariant violations, <1 s runtime. Wrote both evaluation reports, custom cases, full-run stats, README, and requirements.txt.
+- [Oct 24 19:00] Parser and linking pass. Evidence parsing now covers JSON-line logs, bracket/pipe/syslog trace shapes (including the bare `tr-…` token), `message="…"` envelopes, and empty-table SQL coverage: 2,857 observations / 2,032 resources / 454 coverage. Added unbounded identity discovery (`identifier_late`), resource-scoped evidence attach, and a unique ±15-minute workflow-dispatch rule for account/analytics ids; rejected wider windows and nearest-gap rules in `notes/LINK_RULE_STUDY.md` (6 correct / 0 wrong at 15 min vs 15/11 for a widening fallback). Added future `VERIFY_*` steps for linked-but-stateless resources in INCOMPLETE cases. Sample status 32/32; P=1.0000, R=0.8964 (173/193), F1=0.9454, sequence 17/32; dev R=0.9060, held-out R=0.8636. Full 518-case run: 159 COMPLETE / 349 INCOMPLETE / 10 NOT_APPLICABLE, 2,885 steps, 0 invariant violations, 8 `low_evidence` zero-step cases. Wrote `notes/LINK_RULE_STUDY.md`, `notes/ZERO_STEP_FAMILIES.md`, `notes/COVERAGE.md`, and regenerated `output.csv`.
 
 ## 12. Next steps
 1. Package `code.zip` (README.md + code/, no dataset, no caches) and confirm the reports are inside it.
@@ -128,6 +130,7 @@ PROJECT_STATE.md   this file
 4. Submit `code.zip`, `output.csv`, and `log.txt` at the challenge URL.
 
 ## 13. Open questions
-- Whether evidence-sparse COMPLETE cases should remain COMPLETE with zero steps or be reported INCOMPLETE for unverifiability.
 - Whether catalog link + later full-system snapshot is accepted as absence proof by the hidden grader.
 - Whether every stale-replica row should always be a finding, even when the primary is clean (current engine treats it as a remaining copy).
+- Whether the eight `low_evidence` zero-step COMPLETE cases are graded COMPLETE or should carry a future re-verification step; they are isolated in `notes/ZERO_STEP_FAMILIES.md` so the decision can be reversed in one place.
+- Whether screenshots should be OCR'd. They are the only pre-cutoff artifact for `object_19` (case_61) and `marketing_001` (case_63).

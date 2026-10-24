@@ -503,11 +503,13 @@ def _parse_sql(path: str, file_id: str, captured_at: str, root: str) -> tuple:
                 continue
             columns = [d[0] for d in cursor.description or []]
             systems = set()
+            row_count = 0
             for raw in cursor.fetchall():
                 row = dict(zip(columns, raw))
                 resource_id = str(row.get("resource_id") or "")
                 if not resource_id:
                     continue
+                row_count += 1
                 record_json = row.get("record_json")
                 embedded: Dict[str, Any] = {}
                 if isinstance(record_json, str) and record_json.strip().startswith("{"):
@@ -592,6 +594,20 @@ def _parse_sql(path: str, file_id: str, captured_at: str, root: str) -> tuple:
                         observed_at=str(snapshot_at),
                     )
                 )
+            if row_count == 0:
+                # An empty table still proves the store was inspected and held
+                # no row at snapshot time, which is valid absence evidence.
+                system = _table_system(table, {}, "")
+                if system:
+                    coverage.append(
+                        Coverage(
+                            file_id=file_id,
+                            captured_at=captured_at,
+                            system_id=system,
+                            store=table,
+                            observed_at=str(snapshot_at),
+                        )
+                    )
     finally:
         conn.close()
     return observations, coverage
@@ -870,10 +886,15 @@ KV_RE = re.compile(
     r'([A-Za-z_][A-Za-z0-9_]*)=(?:"([^"]*)"|\'([^\']*)\'|([^\s]+))'
 )
 BRACKET_RE = re.compile(
-    r"^\S+\s+\[(?P<level>[A-Z]+)\]\s+\[(?P<service>[a-z_]+)\]\s+(?P<event>[a-z_]+):\s*(?P<rest>.*)$"
+    r"^\S+\s+\[(?P<level>[A-Z]+)\]\s+\[(?P<service>[a-z_]+)\]\s+"
+    r"(?:\[(?P<trace>[^\]]+)\]\s+)?(?P<event>[a-z_]+):\s*(?P<rest>.*)$"
 )
 SYSLOG_RE = re.compile(
     r"^\S+\s+<\d+>\d\s+\S+\s+(?P<service>[a-z_]+)\s+(?P<trace>tr-\S+)\s+-\s+-\s+(?P<rest>.*)$"
+)
+PIPE_RE = re.compile(
+    r"^\S+\s+\|\s*(?P<level>[A-Z]+)\s*\|\s*(?P<service>[a-z_]+)\s*\|\s*"
+    r"(?P<trace>[^|]*?)\s*\|\s*(?P<event>[a-z_]+)\s*\|(?P<rest>.*)$"
 )
 
 
@@ -884,6 +905,40 @@ def _kv_fields(text: str) -> Dict[str, str]:
         value = m.group(2) if m.group(2) is not None else m.group(3) if m.group(3) is not None else m.group(4)
         fields[key] = value
     return fields
+
+
+def _json_log_fields(text: str) -> Dict[str, str]:
+    """Parse a JSON-object log line into flat string fields."""
+    try:
+        data = json.loads(text)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return {
+        str(key): str(value)
+        for key, value in data.items()
+        if isinstance(value, (str, int, float))
+    }
+
+
+def _unwrap_message(fields: Dict[str, str]) -> Dict[str, str]:
+    """Promote key/value pairs packed inside a ``message`` envelope.
+
+    Some collectors wrap the real payload as ``message="instance=..."`` with
+    escaped quotes.  Re-parse that payload so its ``event`` and
+    ``resource_id`` become first-class fields.
+    """
+    body = fields.get("message") or fields.get("msg") or ""
+    if "=" not in body:
+        return fields
+    inner = _kv_fields(body)
+    if not inner:
+        return fields
+    merged = dict(fields)
+    for key, value in inner.items():
+        merged.setdefault(key, value)
+    return merged
 
 
 EVENT_CATEGORY = {
@@ -1015,20 +1070,42 @@ def _parse_logs(path: str, file_id: str, captured_at: str, root: str) -> tuple:
             event = ""
             body = rest
             bracket = BRACKET_RE.match(line)
+            pipe = PIPE_RE.match(line)
             if bracket:
                 service = bracket.group("service")
                 event = bracket.group("event")
                 body = bracket.group("rest")
+                if bracket.group("trace"):
+                    body = f'trace_id="{bracket.group("trace")}" ' + body
+            elif pipe:
+                service = pipe.group("service")
+                event = pipe.group("event")
+                body = pipe.group("rest")
+                if pipe.group("trace") and pipe.group("trace") != "-":
+                    body = f'trace_id="{pipe.group("trace")}" ' + body
             else:
                 syslog = SYSLOG_RE.match(line)
                 if syslog:
                     service = syslog.group("service")
                     body = syslog.group("rest")
-                fields_probe = _kv_fields(body)
-                service = fields_probe.get("service", service)
-                event = fields_probe.get("event", "")
+                    if syslog.group("trace") and syslog.group("trace") != "-":
+                        body = f'trace_id="{syslog.group("trace")}" ' + body
+                fields_probe = _json_log_fields(rest)
+                if fields_probe:
+                    service = fields_probe.get("service", service) or fields_probe.get("logger", service)
+                    event = fields_probe.get("event", "")
+                    body = rest
+                else:
+                    fields_probe = _kv_fields(body)
+                    service = fields_probe.get("service", service)
+                    event = fields_probe.get("event", "")
 
-            fields = _kv_fields(body)
+            if rest.lstrip().startswith("{"):
+                fields = _json_log_fields(rest)
+                fields = _unwrap_message(fields)
+            else:
+                fields = _kv_fields(body)
+                fields = _unwrap_message(fields)
             if service:
                 fields.setdefault("service", service)
             if event:

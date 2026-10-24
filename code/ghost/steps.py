@@ -5,8 +5,16 @@ from __future__ import annotations
 import json
 from typing import Dict, Iterable, List, Optional
 
+from code.ghost.evidence_index import category_for, system_for
 from code.ghost.loaders import natural_sort_key
-from code.ghost.rules import Assessment, assess_state, load_rules
+from code.ghost.rules import (
+    VERIFICATION_OP,
+    VERIFICATION_STATE,
+    Assessment,
+    assess_state,
+    load_rules,
+    required_action,
+)
 from code.ghost.state import ResourceState
 
 PHASE_ORDER = {"FINDING": 0, "REMEDIATION": 1, "VERIFICATION": 2}
@@ -68,10 +76,83 @@ def _dedupe(steps: Iterable[Dict[str, object]]) -> List[Dict[str, object]]:
     return result
 
 
+def _future_verification_steps(
+    trace,
+    states: Dict[str, ResourceState],
+    rules: Dict[str, Dict[str, str]],
+    audit_at: str,
+) -> List[Dict[str, object]]:
+    """Checks for resources the case reached but cannot prove a state for.
+
+    An identifier-bearing artifact captured after ``audit_at`` can still show
+    that a record exists and belongs to the subject (for example a lookup log
+    naming a now-deleted account, or a retention index naming an audit row).
+    Nothing about the record's current state is admissible, so the case stays
+    INCOMPLETE, but the policy's required end state is known and must be
+    verified after remediation.  Catalog-only links are excluded: they name a
+    resource without showing the subject on it.
+    """
+    steps: List[Dict[str, object]] = []
+    for resource_id, resource_trace in trace.resources.items():
+        if resource_id in states:
+            continue
+        # A resource with an admissible observation already had its state
+        # reconstructed; it may only be missing from ``states`` because an
+        # older duplicate profile was pruned.  Do not invent future work for
+        # a copy whose current state is known.
+        has_eligible_observation = any(
+            not (obs.captured_at and obs.captured_at > audit_at)
+            and not (obs.observed_at and obs.observed_at > audit_at)
+            for obs in resource_trace.observations
+        )
+        if has_eligible_observation:
+            continue
+        identifier_link = any(
+            path.reason.startswith("identifier") for path in resource_trace.link_paths
+        )
+        if not identifier_link:
+            continue
+        category = category_for(resource_id, resource_trace.category)
+        if category not in rules:
+            continue
+        system_id = system_for(resource_id, resource_trace.system_id)
+        if not system_id:
+            continue
+        probe = ResourceState(
+            resource_id=resource_id,
+            system_id=system_id,
+            category=category,
+            state="UNKNOWN",
+            evidence_id="",
+            observed_at="",
+        )
+        action = required_action(category, probe, rules, audit_at)
+        if action == "RETAIN":
+            operation, end_state = "VERIFY_RECORD_PRESENT", "PRESENT"
+        else:
+            operation = VERIFICATION_OP.get(action)
+            end_state = VERIFICATION_STATE.get(action, "")
+        if not operation:
+            continue
+        steps.append(
+            {
+                "step_no": 0,
+                "phase": "VERIFICATION",
+                "system_id": system_id,
+                "resource_id": resource_id,
+                "operation": operation,
+                "state": end_state,
+                "evidence_id": "",
+            }
+        )
+    return steps
+
+
 def build_case_result(
     states: Dict[str, ResourceState],
     rules: Dict[str, Dict[str, str]],
     audit_at: str,
+    trace=None,
 ) -> tuple:
     assessments: List[Assessment] = []
     for resource_id in sorted(states, key=natural_sort_key):
@@ -125,6 +206,8 @@ def build_case_result(
                     "",
                 )
             )
+        if trace is not None:
+            steps.extend(_future_verification_steps(trace, states, rules, audit_at))
 
     steps = _sort_steps(_dedupe(steps))
     return status, steps

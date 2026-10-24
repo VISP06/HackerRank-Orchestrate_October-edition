@@ -31,13 +31,13 @@ submission.
 |---|---:|
 | Requests processed | 518 |
 | Output | `output.csv` (repository root) |
-| `COMPLETE` | 181 |
-| `INCOMPLETE` | 327 |
+| `COMPLETE` | 159 |
+| `INCOMPLETE` | 349 |
 | `NOT_APPLICABLE` | 10 |
-| Total steps emitted | 2,466 |
-| Mean steps per case | 4.77 |
+| Total steps emitted | 2,885 |
+| Mean steps per case | 5.57 |
 | Maximum steps in one case | 14 |
-| Pipeline wall time | ~1.0 s |
+| Pipeline wall time | ~0.9 s |
 | External network calls | 0 |
 | Model calls | 0 |
 | Tokens | 0 |

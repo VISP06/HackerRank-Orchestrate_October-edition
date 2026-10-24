@@ -112,6 +112,37 @@ def _parse_resource_ids(text: str) -> Set[str]:
     return {m.group(1) for m in RESOURCE_RE.finditer(text or "")}
 
 
+#: Families whose resources can disappear without leaving an identifier
+#: behind, plus the dispatch event that names them.  Restricted to families
+#: where the study in ``notes/LINK_RULE_STUDY.md`` showed no false positives.
+WORKFLOW_FAMILIES: Dict[str, Tuple[str, Set[str]]] = {
+    "account": ("account_service", {"DELETE_RECORD"}),
+    "analytics": ("analytics_platform", {"ANONYMIZE_RECORD"}),
+}
+
+#: Minutes around ``reported_at`` searched for a unique dispatch.
+#:
+#: Swept 10-90 minutes and a widening 15->30->60->90 fallback against the
+#: sample answers (``notes/LINK_RULE_STUDY.md``).  A single tight window is
+#: the only setting with no wrong links: 15 minutes adds 6 correct account
+#: links and 0 wrong ones, versus 15 correct and 11 wrong for the widening
+#: fallback.  Wider windows pick up neighbouring requests in the same batch.
+WORKFLOW_WINDOW_MINUTES = 15
+
+#: A resource family that the case already reaches does not get a second one.
+FAMILY_CATEGORIES = {
+    "account": {"USER_PROFILE", "ACCOUNT_TOMBSTONE"},
+    "analytics": {"ANALYTICS_PROFILE", "PRODUCT_TELEMETRY"},
+}
+
+
+def resource_family(resource_id: str) -> str:
+    for family in sorted(WORKFLOW_FAMILIES, key=len, reverse=True):
+        if resource_id.startswith(family + "_"):
+            return family
+    return ""
+
+
 def _seconds_between(left: str, right: str) -> float:
     from datetime import datetime
 
@@ -155,6 +186,26 @@ class CaseLinker:
                 for value in values:
                     self._identity_links.append((key, value, rid, linked_at))
 
+        # Workflow dispatches, indexed by resource family.  These are the
+        # only rows that name a resource which leaves no identifier residue
+        # behind (a deleted account, an anonymized analytics profile), so a
+        # unique dispatch in the case's own workflow window is the workflow's
+        # statement about that resource.
+        self._dispatches: Dict[str, List[Dict[str, str]]] = {}
+        for row in activity_rows:
+            if row.get("source_system") != "deletion_worker":
+                continue
+            rid = (row.get("resource_id") or "").strip()
+            family = resource_family(rid)
+            if not family:
+                continue
+            target, types = WORKFLOW_FAMILIES[family]
+            if row.get("target_system") != target or row.get("event_type") not in types:
+                continue
+            self._dispatches.setdefault(family, []).append(row)
+        for rows in self._dispatches.values():
+            rows.sort(key=lambda row: (row.get("event_time", ""), row.get("activity_id", "")))
+
     # -- cluster -----------------------------------------------------------
 
     def cluster_for(self, email: str) -> Dict[str, Any]:
@@ -189,11 +240,78 @@ class CaseLinker:
 
     # -- linking -----------------------------------------------------------
 
+    def _eligible(self, obs: Observation, audit_at: str) -> bool:
+        if obs.captured_at and obs.captured_at > audit_at:
+            return False
+        if obs.observed_at and obs.observed_at > audit_at:
+            return False
+        return True
+
+    def _family_linked(self, trace: CaseTrace, family: str) -> bool:
+        categories = FAMILY_CATEGORIES.get(family, set())
+        for rid, resource_trace in trace.resources.items():
+            if resource_family(rid) == family:
+                return True
+            if categories and any(obs.record_type in categories for obs in resource_trace.observations):
+                return True
+        return False
+
+    def _link_workflow_dispatches(
+        self, trace: CaseTrace, case: Dict[str, str], audit_at: str
+    ) -> None:
+        """Link a resource only when the workflow names exactly one candidate.
+
+        Identity resolution cannot reach a resource that was deleted (account)
+        or anonymized (analytics) before it was captured: no identifier
+        survives on the record, and the evidence that proves the final state
+        contains only the bare resource id.  The deletion workflow's own
+        dispatch is then the only grounded statement that the resource belongs
+        to this request.  Ambiguous windows (several cases dispatched into the
+        same batch) are rejected rather than guessed.
+        """
+        reported_at = case.get("reported_at", "")
+        if not reported_at:
+            return
+        for family in WORKFLOW_FAMILIES:
+            if self._family_linked(trace, family):
+                continue
+            candidates = []
+            for row in self._dispatches.get(family, []):
+                event_time = row.get("event_time", "")
+                if not event_time or event_time > audit_at:
+                    continue
+                delta = _seconds_between(event_time, reported_at)
+                if delta == float("inf") or abs(delta) > WORKFLOW_WINDOW_MINUTES * 60:
+                    continue
+                if row["resource_id"] in trace.resources:
+                    continue
+                candidates.append(row)
+            if len(candidates) != 1:
+                continue
+            row = candidates[0]
+            rid = row["resource_id"]
+            trace.link_resource(
+                rid,
+                LinkPath(
+                    resource_id=rid,
+                    reason="workflow_dispatch",
+                    identifier=row.get("activity_id", ""),
+                    evidence_id=row.get("activity_id", ""),
+                ),
+            )
+            trace.resources[rid].note_known_at(row.get("event_time", ""))
+            trace.resources[rid].activity_ids.append(row.get("activity_id", ""))
+
     def link_case(self, case: Dict[str, str], audit_at: str) -> CaseTrace:
         cluster = self.cluster_for(case.get("email", ""))
         trace = CaseTrace(case_id=case["case_id"], user_id=cluster["user_id"], cluster=cluster)
 
         # 1. Direct evidence observations whose own identifiers match.
+        #    Identity discovery is not itself time-bounded: the current
+        #    identity snapshot and post-cutoff artifacts may reveal which
+        #    resource id belongs to the subject.  What the artifact says about
+        #    the record's *state* is still gated on ``audit_at`` by
+        #    :mod:`code.ghost.state`.
         for key in ("email", "phone", "email_hash", "user_id"):
             values = cluster["emails"] if key == "email" else (
                 cluster["phones"] if key == "phone" else cluster["hashes"] if key == "email_hash" else {cluster["user_id"]}
@@ -201,22 +319,26 @@ class CaseLinker:
             for value in values:
                 if not value:
                     continue
-                for obs in self.index.lookup(key, value):
-                    if obs.captured_at > audit_at:
-                        continue
-                    if obs.observed_at and obs.observed_at > audit_at:
-                        continue
+                matched = [
+                    (self._eligible(obs, audit_at), obs)
+                    for obs in self.index.lookup(key, value)
+                ]
+                # Prefer observations that are admissible as state proof so the
+                # reported link reason/evidence names the strongest source.
+                matched.sort(key=lambda item: (not item[0], item[1].sort_key()))
+                for eligible, obs in matched:
                     trace.add_observation(
                         obs,
                         LinkPath(
                             resource_id=obs.resource_id,
-                            reason=f"identifier:{key}",
+                            reason=f"identifier:{key}" if eligible else f"identifier_late:{key}",
                             identifier=f"{key}={value}",
                             evidence_id=obs.file_id,
                         ),
                     )
-                    known = obs.observed_at or obs.captured_at
-                    trace.resources[obs.resource_id].note_known_at(known)
+                    if eligible:
+                        known = obs.observed_at or obs.captured_at
+                        trace.resources[obs.resource_id].note_known_at(known)
 
         # 2. Explicit data-catalog links.
         for key, value, rid, linked_at in self._identity_links:
@@ -266,45 +388,30 @@ class CaseLinker:
                     )
                     trace.resources[downstream].note_known_at(event_time)
 
-        # 4. Workflow-window discovery for the subject's account profile.
-        #    The account id itself is not an identifier, but a single
-        #    unambiguous deletion dispatch within half an hour of the reported
-        #    completion is the workflow's own statement about this case.  It
-        #    is used only to locate the resource; state still comes from
-        #    evidence captured at or before audit_at.
-        if not any(
-            trace.resources[rid].category in {"USER_PROFILE", "ACCOUNT_TOMBSTONE"}
-            for rid in trace.resources
-        ):
-            reported_at = case.get("reported_at", "")
-            if reported_at:
-                window = 30 * 60
-                candidates = set()
-                for row in self.activity_rows:
-                    if row.get("event_type") != "DELETE_RECORD":
-                        continue
-                    if row.get("source_system") != "deletion_worker":
-                        continue
-                    rid = (row.get("resource_id") or "").strip()
-                    if not rid.startswith("account_"):
-                        continue
-                    event_time = row.get("event_time", "")
-                    if not event_time or event_time > audit_at:
-                        continue
-                    if abs(_seconds_between(event_time, reported_at)) <= window:
-                        candidates.add((rid, event_time))
-                if len(candidates) == 1:
-                    rid, deleted_at = candidates.pop()
-                    trace.link_resource(
-                        rid,
-                        LinkPath(
-                            resource_id=rid,
-                            reason="workflow_window",
-                            identifier=reported_at,
-                            evidence_id="",
-                        ),
-                    )
-                    trace.resources[rid].note_known_at(deleted_at)
+        # 4. Unique workflow-dispatch discovery (deleted accounts, anonymized
+        #    analytics profiles).  Ambiguity is rejected, never guessed.
+        self._link_workflow_dispatches(trace, case, audit_at)
+
+        # 5. Resource-scoped evidence attach: once a resource id is grounded by
+        #    any link, every observation that names that resource belongs to
+        #    the case as well.  This is how a 404/readback row (which by design
+        #    carries no identifier) becomes admissible state evidence.
+        for rid in list(trace.resources):
+            for obs in self.index.by_resource.get(rid, []):
+                if obs in trace.resources[rid].observations:
+                    continue
+                eligible = self._eligible(obs, audit_at)
+                trace.add_observation(
+                    obs,
+                    LinkPath(
+                        resource_id=rid,
+                        reason="resource_observation" if eligible else "resource_observation_late",
+                        identifier=rid,
+                        evidence_id=obs.file_id,
+                    ),
+                )
+                if eligible:
+                    trace.resources[rid].note_known_at(obs.observed_at or obs.captured_at)
         return trace
 
 

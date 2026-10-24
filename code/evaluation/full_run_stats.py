@@ -73,39 +73,60 @@ def main() -> None:
     status_counts = Counter()
     steps_by_status = defaultdict(list)
     zero_step_complete = []
+    status_by_case = {}
+    steps_by_case = {}
     for row in rows:
         status = row["deletion_status"]
         count = len(json.loads(row["steps_json"]))
         status_counts[status] += 1
         steps_by_status[status].append(count)
+        status_by_case[row["case_id"]] = status
+        steps_by_case[row["case_id"]] = count
         if status == "COMPLETE" and count == 0:
             zero_step_complete.append(row["case_id"])
 
     zero_link = []
     linked_without_state = []
+    low_evidence = []
     linked_without_observation = 0
     reason_cases = Counter()
     reason_resources = Counter()
     for request in requests:
+        case_id = request["case_id"]
         if not authorizes_deletion(request.get("request_text", "")):
             continue
         trace = linker.link_case(request, request.get("audit_at", ""))
-        if not trace.resources:
-            zero_link.append(request["case_id"])
-            continue
-        states = reconstruct_state(index, trace, request.get("audit_at", ""))
-        if not states:
-            linked_without_state.append(request["case_id"])
-        linked_without_observation += sum(
-            1 for resource_trace in trace.resources.values() if not resource_trace.observations
-        )
         linked = [
             resource_id
             for resource_id, resource_trace in trace.resources.items()
             if resource_trace.link_paths
         ]
+        states = reconstruct_state(index, trace, request.get("audit_at", "")) if linked else {}
         if not linked:
-            linked_without_state.append(request["case_id"])
+            zero_link.append(case_id)
+        elif not states:
+            linked_without_state.append(case_id)
+        if not linked or not states:
+            low_evidence.append(
+                {
+                    "case_id": case_id,
+                    "status": status_by_case.get(case_id, ""),
+                    "steps": steps_by_case.get(case_id, 0),
+                    "linked": len(linked),
+                    "cause": "no link" if not linked else "no state at audit_at",
+                    "reasons": sorted(
+                        {
+                            trace.resources[resource_id].best_path().split(":", 1)[0]
+                            for resource_id in linked
+                        }
+                    ),
+                }
+            )
+        linked_without_observation += sum(
+            1 for resource_trace in trace.resources.values() if not resource_trace.observations
+        )
+        if not linked:
+            continue
         seen_reasons = set()
         for resource_id in linked:
             reason = trace.resources[resource_id].best_path().split(":", 1)[0]
@@ -176,6 +197,10 @@ def main() -> None:
     lines.append(
         f"- COMPLETE cases with zero verification steps: **{len(zero_step_complete)}**"
     )
+    lines.append(
+        f"- `low_evidence` cases (no link, or links but no state at `audit_at`): "
+        f"**{len(low_evidence)}** ({_share(len(low_evidence), total)})"
+    )
     lines.append("")
     if zero_link:
         lines.append(
@@ -195,6 +220,26 @@ def main() -> None:
             + ", ".join(f"`{case_id}`" for case_id in sorted(zero_step_complete))
         )
         lines.append("")
+    lines.append("## Low-evidence cases")
+    lines.append("")
+    lines.append(
+        "`low_evidence` is set when a case has no linked resource at all, or has links but no "
+        "admissible state observation at `audit_at`. These answers are deterministic, but they "
+        "rest on the absence of evidence rather than on positive evidence of the required state."
+    )
+    lines.append("")
+    if low_evidence:
+        lines.append("| Case | Status | Steps | Links | Cause | Link reasons |")
+        lines.append("|---|---|---:|---:|---|---|")
+        for item in sorted(low_evidence, key=lambda entry: entry["case_id"]):
+            reasons = ", ".join(f"`{reason}`" for reason in item["reasons"]) or "-"
+            lines.append(
+                f"| `{item['case_id']}` | {item['status']} | {item['steps']} | "
+                f"{item['linked']} | {item['cause']} | {reasons} |"
+            )
+    else:
+        lines.append("No low-evidence cases.")
+    lines.append("")
     lines.append("## Link-path usage")
     lines.append("")
     lines.append("| Link reason | Cases | Resources |")
@@ -204,9 +249,11 @@ def main() -> None:
     lines.append("")
     lines.append(
         "Reason keys are `identifier:<field>` for direct identifier matches, "
+        "`identifier_late:<field>` for identity discovered only in post-cutoff artifacts, "
         "`catalog_link` for `LINK_RESOURCE_IDENTITY` activity, "
-        "`activity_propagation` for named downstream copies, and "
-        "`workflow_window` for the narrow account-discovery fallback."
+        "`activity_propagation` for named downstream copies, "
+        "`resource_observation` for evidence attached once a resource id is grounded, and "
+        "`workflow_dispatch` for the tight-window account/analytics discovery rule."
     )
     lines.append("")
     lines.append("## Invariants")
@@ -230,6 +277,7 @@ def main() -> None:
         f"zero_link={len(zero_link)} linked_no_state={len(linked_without_state)} "
         f"no_obs_resources={linked_without_observation} "
         f"zero_step_complete={len(zero_step_complete)} "
+        f"low_evidence={len(low_evidence)} "
         f"violations={len(violations)} runtime={runtime:.2f}s"
     )
 
