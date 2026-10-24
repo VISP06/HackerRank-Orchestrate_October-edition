@@ -249,3 +249,51 @@ branch=main
 repo_root=/home/vishruth/ghost-data-agent
 worktree=/home/vishruth/ghost-data-agent
 parent_agent=none
+## [2026-10-24T20:52:20.242250+00:00] SESSION START
+
+tool=opencode
+model=gpt-5.6-luna
+Repo Root: /home/vishruth/ghost-data-agent
+Branch: main
+Worktree: /home/vishruth/ghost-data-agent
+Parent Agent: none
+Language: py
+Time Remaining: not configured
+## [2026-10-24T21:40:07.354400+00:00] SESSION START
+
+tool=opencode
+model=gpt-5.6-luna
+Repo Root: /home/vishruth/ghost-data-agent
+Branch: main
+Worktree: /home/vishruth/ghost-data-agent
+Parent Agent: none
+Language: py
+Time Remaining: not configured
+## [2026-10-24T20:42:00+00:00] Finalize authoritative fresh usage report
+
+User Prompt (verbatim, secrets redacted):
+Read AGENTS.md first and follow the logging rules. The fresh full run has finished. Do NOT start another pipeline run and do NOT git push. Continue from step 3 of the previous task:
+
+1. Run code/evaluation/usage_report.py to generate code/evaluation/usage_report.md from the new usage log only. Confirm it has the "Development usage (not part of the final run)" section. Remove the stale top-level evaluation/usage_report.md if present.
+2. Re-run the 32-sample evaluation, the invariants, and validate.py. Compare the new output.csv with the checkpoint (git show pre-fresh-run:output.csv): how many rows differ, and for each changed case what changed and why. Report sample metrics before and after.
+3. If the new results are WORSE on the sample metrics or violate any invariant, do not commit: restore output.csv and code/llm_cache/ from tag pre-fresh-run and tell me. Otherwise commit.
+
+End with: calls and tokens per task, estimated cost, before/after metrics, and the list of changed cases.
+
+Agent Response Summary:
+Generated the authoritative usage report from the fresh 42-record usage log, including the development-history section from the archived log. The sample evaluation remained identical to the checkpoint, root output validation passed for all 518 rows, and invariant validation found zero violations. The fresh output was byte-identical to the pre-fresh-run checkpoint, so there were no changed cases; the report generator, archived log, fresh log, state update, and transcript were committed without pushing.
+
+Actions:
+* Ran `python3 code/evaluation/usage_report.py` and removed the stale top-level duplicate when present.
+* Ran the 32-sample evaluation with splits and no pipeline rerun.
+* Ran root `validate_output_file` and `check_rows`: 518 rows, valid, 0 errors, 0 invariant violations.
+* Compared `output.csv` with `git show pre-fresh-run:output.csv`; 0 differing rows.
+* Updated PROJECT_STATE.md and committed as `4abfa4e` (then amended to include this log entry).
+
+Context:
+tool=opencode
+model=gpt-5.6-luna
+branch=main
+repo_root=/home/vishruth/ghost-data-agent
+worktree=/home/vishruth/ghost-data-agent
+parent_agent=none
