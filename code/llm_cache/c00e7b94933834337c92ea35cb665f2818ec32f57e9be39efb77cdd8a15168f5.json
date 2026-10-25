@@ -1,0 +1,12 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "task": "intent_classify",
+  "prompt_version": "v1",
+  "input_tokens": 236,
+  "output_tokens": 53,
+  "result": {
+    "intent": "NON_DELETION",
+    "language": "en",
+    "reason": "The user is requesting to update their mobile number and keep the account active, which is a correction rather than a deletion."
+  }
+}

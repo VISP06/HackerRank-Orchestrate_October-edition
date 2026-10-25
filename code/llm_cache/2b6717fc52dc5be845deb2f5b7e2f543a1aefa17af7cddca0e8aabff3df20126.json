@@ -1,0 +1,12 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "task": "intent_classify",
+  "prompt_version": "v1",
+  "input_tokens": 236,
+  "output_tokens": 50,
+  "result": {
+    "intent": "NON_DELETION",
+    "language": "en",
+    "reason": "The user is requesting a copy of past invoices and explicitly asks to keep their profile and purchase history intact."
+  }
+}

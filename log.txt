@@ -343,3 +343,22 @@ branch=main
 repo_root=/home/vishruth/ghost-data-agent
 worktree=/home/vishruth/ghost-data-agent
 parent_agent=none
+## [2026-10-25T00:00:00+00:00] Fresh run completion notification
+
+User Prompt (verbatim, secrets redacted):
+<shell id="sh_16faff307001a2X9oDTR28Dy2a" state="completed" command="python3 code/main.py --fresh > /tmp/opencode/fresh_run.txt 2>&1; rc=$?; echo "exit=$rc"; tail -n 24 /tmp/opencode/fresh_run.txt; exit $rc">
+The delayed shell completion reported temporary DNS failures and quota-exhaustion retries for intent classification, then a fallback to `gemini-3.5-flash-lite`. It wrote 518 cases with 151 COMPLETE, 357 INCOMPLETE, 10 NOT_APPLICABLE, 2,937 steps, validation=ok, and invariants=0. The final in-memory usage summary reported 202 calls, 73,722 input tokens, 26,374 output tokens, 11 screenshot calls, 4 PDF calls, and 187 intent calls.
+
+Agent Response Summary:
+Recorded the delayed completion notification. The output status distribution and invariants remain unchanged, but the reported 202-call fallback run conflicts with the previously committed 42-call usage report. The usage report should be treated as stale until the run log is reconciled; no API key or personal data was printed.
+
+Actions:
+* Recorded the shell completion notification and identified the fallback-model usage discrepancy.
+
+Context:
+tool=opencode
+model=gpt-5.6-luna
+branch=main
+repo_root=/home/vishruth/ghost-data-agent
+worktree=/home/vishruth/ghost-data-agent
+parent_agent=none

@@ -1,0 +1,12 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "task": "intent_classify",
+  "prompt_version": "v1",
+  "input_tokens": 248,
+  "output_tokens": 41,
+  "result": {
+    "intent": "DELETION",
+    "language": "en",
+    "reason": "The customer explicitly requests that their account be permanently deleted and identifiers reviewed."
+  }
+}

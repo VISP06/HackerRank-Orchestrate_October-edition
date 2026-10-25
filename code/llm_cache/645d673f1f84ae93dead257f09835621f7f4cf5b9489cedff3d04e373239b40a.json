@@ -1,0 +1,12 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "task": "intent_classify",
+  "prompt_version": "v1",
+  "input_tokens": 252,
+  "output_tokens": 43,
+  "result": {
+    "intent": "DELETION",
+    "language": "en",
+    "reason": "The user explicitly asks to remove their account and the personal information linked to it."
+  }
+}

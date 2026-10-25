@@ -1,0 +1,12 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "task": "intent_classify",
+  "prompt_version": "v1",
+  "input_tokens": 232,
+  "output_tokens": 47,
+  "result": {
+    "intent": "NON_DELETION",
+    "language": "en",
+    "reason": "The customer is asking for help resetting their login and explicitly states not to close the account."
+  }
+}

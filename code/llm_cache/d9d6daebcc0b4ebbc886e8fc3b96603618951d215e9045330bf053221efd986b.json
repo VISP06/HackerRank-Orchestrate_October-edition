@@ -1,0 +1,12 @@
+{
+  "model": "gemini-3.5-flash-lite",
+  "task": "intent_classify",
+  "prompt_version": "v1",
+  "input_tokens": 245,
+  "output_tokens": 42,
+  "result": {
+    "intent": "DELETION",
+    "language": "en",
+    "reason": "The customer explicitly asks to erase the account and process personal-data deletion."
+  }
+}
