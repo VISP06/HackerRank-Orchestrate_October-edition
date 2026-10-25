@@ -165,6 +165,10 @@ Result: **6/6 passed**.
 
 ## 5. Failures found and improvements made
 
+The audit-trail explanation view was added as a deterministic, cache-only
+post-hoc projection of the existing trace, state, policy, and step objects; it
+does not alter decisions or make model/network calls.
+
 ### Fixed during development
 
 | Failure | Root cause | Fix |

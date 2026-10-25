@@ -26,6 +26,7 @@ Oct 24 2026 18:00 IST start → **Oct 26 2026 06:00 IST submission**. Plan to be
 - [x] No hardcoded labels or case-specific answers anywhere
 - [x] Reports/prompts live in .md or source files (the code judge ignores .csv/.json/.jsonl/.sql/.log)
 - [x] No API keys in the zip or in chat/log
+- [x] Audit-trail explanation CLI and deterministic explanation tests
 
 ## 4. Key facts from the spec
 - `reported_status` (COMPLETE / PARTIALLY_COMPLETE / NOT_STARTED) is a CLAIM, not truth. Verify against evidence at `audit_at`.
@@ -90,6 +91,43 @@ layer only converts images/PDFs into grounded observations and cross-checks inte
 
 ## 8. Repo layout
 ```
+
+## 8b. Feature: audit-trail explanation
+
+### Scope
+`python3 code/main.py --explain CASE_ID [--json]` renders a masked plain-text
+or JSON audit record, and `--explain-all DIR` writes one deterministic JSON
+record per case. The view projects the existing identity cluster, link paths,
+point-in-time states, policy assessments, evidence timestamps, risks, status,
+and emitted steps; explanation mode is cache-only and makes no LLM or network
+calls.
+
+### Non-goals
+This feature does not change identity resolution, linking, state
+reconstruction, policy decisions, status, evidence selection, step generation,
+ordering, or `output.csv`. It does not infer missing evidence or expose
+unmasked personal data.
+
+### Acceptance criteria
+- All 518 requests have an explanation and each explanation's steps exactly
+  equal the corresponding `output.csv` steps.
+- Explanations cite no evidence captured after `audit_at`, mask email, phone,
+  and names, and explicitly describe low-evidence and rejected-decoy cases.
+- Plain text contains IDENTITY, TIMELINE, RESOURCES, RISKS, STATUS, and STEPS;
+  JSON contains the same information for compliance storage.
+- `python3 -m unittest code/evaluation/test_explain.py` passes and output is
+  deterministic across repeated runs.
+
+### Required gates
+1. Keyless, non-fresh regeneration is byte-identical to `output.csv` and does
+   not modify it.
+2. Sample evaluation remains 32/32 status, precision 1.0000, recall 0.8964,
+   and F1 0.9454.
+3. Invariants, validation, and all tests pass.
+4. The diff from `main` contains only the approved explanation/test/docs/log
+   files.
+5. Explanation code has no network or LLM calls and no key or personal data in
+   new files.
 code/         agent source (loaders, extractors, rules, step generator, writer, CLI)
 dataset/      provided data (NOT in zip)
 code/evaluation/   eval harness, evaluation_report.md, usage_report.md (reports must be inside code/)
@@ -126,6 +164,7 @@ PROJECT_STATE.md   this file
 - [Oct 24 19:30] Vision and PDF passes. All 11 PNGs read with `gemini-3.1-flash-lite` vision (verbatim OCR grounding; catalog aliases only for file names and printed references) and all 4 PDFs read with exact-token/alias grounding. Rejected model-invented ids (`support_5034`, `account_18`, `object_20261260`, `support_4827`) and the `marketing_001` decoy. Full 518-case run: 151 COMPLETE / 357 INCOMPLETE / 10 NOT_APPLICABLE, 2,937 steps, 1 `low_evidence` case (`case_63`), 0 invariant violations, ~2.6 s with cache. Sample metrics unchanged (32/32 status, P=1.0, R=0.8964, F1=0.9454); custom cases 6/6. Fixed offline cache lookup so a keyless checkout reproduces the same output. Wrote `notes/IMAGE_FINDINGS.md`, `notes/PDF_FINDINGS.md`, updated `notes/ZERO_STEP_FAMILIES.md`.
 - [Oct 24 20:30] Authoritative fresh full run completed once after archiving the mixed development usage log. The run logged 42 real calls (11 screenshots, 4 PDFs, 27 intent), 34,218 input tokens, 19,724 output tokens, 53,942 total tokens, estimated cost $0.038141, and 0 cache hits. The resulting `output.csv` is byte-identical to `pre-fresh-run`; sample metrics remain 32/32 status, 17/32 sequence, P=1.0000, R=0.8964, F1=0.9454, with dev/held-out unchanged at R=0.9060/0.8636. Validation and invariants both pass with 0 violations. Archived history is `notes/archive/usage_log_development.jsonl`; `code/evaluation/usage_report.py` now generates the authoritative report.
 - [Oct 24 22:15] Packaging/docs pass completed. Updated `code/evaluation/evaluation_report.md` with the current metrics, custom cases, root causes, LLM-layer contribution, and deterministic-versus-LLM ablation. Updated README setup, offline/keyed commands, architecture, limitations, and privacy statement. Built and inspected `code.zip` (298,329 bytes; 456 files), then ran the extracted package offline with the dataset symlink: 518 rows, 0 invariant violations, byte-identical output SHA-256 `a8aea02c…bd83435`. Root validation passed: exact header, 518 natural-order rows, valid JSON, consecutive steps, 0 errors.
+- [Oct 25] Added the cache-only, post-hoc audit-trail explanation CLI and tests. It masks identifiers, reports identity/link/state/policy/evidence reasoning, preserves exact emitted steps, and explicitly records low-evidence and rejected-decoy cases.
 
 ## 12. Next steps
 1. Create `agent-trace.zip` per `agent_trace_instructions.md` without credentials.
@@ -136,3 +175,4 @@ PROJECT_STATE.md   this file
 - Whether every stale-replica row should always be a finding, even when the primary is clean (current engine treats it as a remaining copy).
 - Whether `case_63` should carry a future re-verification step instead of staying an evidence-sparse COMPLETE; it is isolated in `notes/ZERO_STEP_FAMILIES.md` so the decision can be reversed in one place.
 - Whether the vision pass should be extended with a second model opinion for screenshots; the current single pass has 100% sample precision after grounding but no independent OCR check.
+- Whether future audit consumers need a separate redacted explanation archive; the current feature writes JSON only when explicitly requested.

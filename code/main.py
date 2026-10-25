@@ -31,6 +31,7 @@ from code.ghost.rules import load_rules
 from code.ghost.state import reconstruct_state
 from code.ghost.steps import build_case_result, serialize_steps
 from code.ghost.validate import validate_output_file
+from code.ghost.explain import build_explanation, render_plain
 
 
 def _dataset_path(name: str) -> str:
@@ -260,6 +261,8 @@ def main() -> None:
     parser.add_argument("--requests", default=os.path.join(REPO_ROOT, "dataset", "deletion_requests.csv"))
     parser.add_argument("--out", default=os.path.join(REPO_ROOT, "output.csv"))
     parser.add_argument("--explain", default="", help="Print per-resource state for one case id")
+    parser.add_argument("--json", action="store_true", help="Emit --explain as JSON")
+    parser.add_argument("--explain-all", default="", metavar="DIR", help="Write one explanation JSON file per case")
     parser.add_argument("--fresh", action="store_true", help="Bypass all LLM caches for a fresh run")
     parser.add_argument("--skip-llm", action="store_true", help="Skip all LLM features (deterministic only)")
     parser.add_argument(
@@ -268,6 +271,35 @@ def main() -> None:
         help="Comma-separated LLM tasks to enable (screenshots,pdfs,intent)",
     )
     args = parser.parse_args()
+    if args.explain or args.explain_all:
+        from code.ghost.llm import LLMClient
+        # Empty credentials make this explicitly cache-only: explanation mode
+        # can never create an API client or make a network request.
+        os.environ.pop("GEMINI_API_KEY", None)
+        offline_llm = LLMClient(api_key="", fresh=False)
+        requests = load_deletion_requests(args.requests)
+        index, linker, rules = build_engine(llm=offline_llm)
+        wanted = {args.explain} if args.explain else {r["case_id"] for r in requests}
+        explanations = {}
+        for req in requests:
+            if req["case_id"] not in wanted:
+                continue
+            if authorizes_deletion(req.get("request_text", "")):
+                status, steps, trace, states = audit_case(req, linker, index, rules)
+            else:
+                trace = linker.link_case(req, req.get("audit_at", ""))
+                status, steps, states = "NOT_APPLICABLE", [], {}
+            explanations[req["case_id"]] = build_explanation(req, trace, states, rules, steps, status, index, linker)
+        if args.explain_all:
+            os.makedirs(args.explain_all, exist_ok=True)
+            for case_id in sorted(explanations, key=lambda value: int(value.split("_")[1])):
+                with open(os.path.join(args.explain_all, case_id + ".json"), "w", encoding="utf-8") as handle:
+                    json.dump(explanations[case_id], handle, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        elif args.json:
+            print(json.dumps(explanations[args.explain], ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+        else:
+            print(render_plain(explanations[args.explain]))
+        return
     summary = run_pipeline(
         args.requests, args.out,
         explain=args.explain,

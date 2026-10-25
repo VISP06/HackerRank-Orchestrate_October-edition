@@ -77,6 +77,8 @@ Useful switches:
 | `--skip-llm` | Deterministic-only run; no LLM client, no cache reads |
 | `--llm-tasks screenshots,pdfs` | Disable the intent cross-check |
 | `--explain case_01` | Print linked resources, states, and evidence for one case |
+| `--json` | Emit `--explain` as machine-readable JSON |
+| `--explain-all DIR` | Write deterministic JSON explanations for all cases into `DIR` |
 
 To specify custom input or output paths:
 ```bash
@@ -89,6 +91,26 @@ python3 code/main.py --explain case_01
 ```
 
 The pipeline automatically validates the output against the challenge schema, ordering, and state constraints upon completion. It also runs label-free invariant checks (phase order, allowed operation/state pairs, evidence recency, evidence rules) and reports the count.
+
+### Audit trail (explain)
+
+The explanation commands are post-hoc, cache-only views of the same identity,
+linking, state, policy, and step objects used for `output.csv`; they do not make
+LLM or network calls and mask personal data. For example:
+
+```bash
+python3 code/main.py --explain case_33
+python3 code/main.py --explain case_45 --json
+python3 code/main.py --explain case_34
+python3 code/main.py --explain case_63
+python3 code/main.py --explain-all reports/explanations
+```
+
+`case_45` is a masked **COMPLETE** audit (retained records are verified),
+`case_33` is a masked **INCOMPLETE** audit (findings, remediation, and checks),
+`case_533` is a masked **NOT_APPLICABLE** example whose intent signal is
+non-deletion, and `case_63` explicitly records the
+rejected screenshot decoy and its evidence-sparse **COMPLETE** result.
 
 ### Solution architecture
 

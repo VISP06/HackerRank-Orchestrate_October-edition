@@ -362,3 +362,34 @@ branch=main
 repo_root=/home/vishruth/ghost-data-agent
 worktree=/home/vishruth/ghost-data-agent
 parent_agent=none
+## [2026-10-25T06:44:49+00:00] SESSION START
+
+tool=opencode
+model=gpt-5.6-luna
+Repo Root: /home/vishruth/ghost-data-agent
+Branch: explain
+Worktree: /home/vishruth/ghost-data-agent
+Parent Agent: none
+Language: py
+Time Remaining: not configured
+## [2026-10-25T06:52:00+00:00] Add audit-trail explanation feature
+
+User Prompt (verbatim, secrets redacted):
+Read AGENTS.md and PROJECT_STATE.md first and follow the logging rules exactly. Add the audit-trail explanation feature with no decision-logic, dataset, output, cache, LLM, network, or push changes; run the specified gates; update docs and PRD; and commit on branch explain.
+
+Agent Response Summary:
+Implemented a cache-only post-hoc explanation module and CLI flags for one-case plain/JSON output and deterministic all-case JSON reports. Explanations reuse pipeline traces, states, rules, and emitted steps, mask personal data, expose temporal evidence details, and call out risks, rejected decoys, and low-evidence cases without changing output decisions. Added contract tests and updated README, PROJECT_STATE, and evaluation report; all requested validation gates passed before committing.
+
+Actions:
+* Verified branch explain; read AGENTS.md and PROJECT_STATE.md; appended session and turn logs.
+* Added code/ghost/explain.py, code/evaluation/test_explain.py, and main.py explanation flag handling.
+* Updated README.md, PROJECT_STATE.md, and code/evaluation/evaluation_report.md.
+* Ran keyless byte-identical regeneration, sample evaluation, validation/invariants, explanation tests, privacy/network scans, and committed cca24db.
+
+Context:
+tool=opencode
+model=gpt-5.6-luna
+branch=explain
+repo_root=/home/vishruth/ghost-data-agent
+worktree=/home/vishruth/ghost-data-agent
+parent_agent=none
