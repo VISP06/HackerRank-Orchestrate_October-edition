@@ -42,6 +42,16 @@ Changed cases (all):
 Examples (up to 10):
 - `case_512`: COMPLETE -> COMPLETE; +1 steps, -0 steps
 
-## Decision
+## Failures found and decision
 
-The study is evidence for the adoption gates; production remains default-OFF until all gates pass.
+The adoption gate **self-supervised precision >= 0.99 was NOT met**, so the
+exclusive rule stays **OFF**. This experiment is **INCONCLUSIVE**, not a proven
+failure: the self-supervised harness did not reproduce a known-good baseline.
+The earlier link-rule study measured the +/-15-minute rule at 6 correct / 0
+wrong, while this harness scored the same rule at 0/9. The cause is verifiable
+from the harnesses: the earlier study scores sample expected resources and
+skips cases whose family is already linked, while this study hides every
+full-run identifier-linked account/analytics resource and scores alternate
+dispatch assignments. Those are different populations and baselines.
+
+Lesson: a validation harness must first reproduce a known-good baseline.

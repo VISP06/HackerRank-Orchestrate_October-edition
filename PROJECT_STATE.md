@@ -160,12 +160,16 @@ network calls, or use case/resource/user hardcoding.
 4. Two opt-in runs are byte-identical.
 
 ### Outcome
-The generated study in `notes/EXCLUSIVE_LINKS_STUDY.md` failed Gate 1:
-self-supervised precision was 0.0000 for both the old and exclusive measures,
-with the exclusive rule producing more wrong assignments (13 versus 9). Sample
-metrics were unchanged and the one full-run change was allowed, but the default
-remains OFF. This is the documented negative result; `output.csv` was not
-regenerated.
+The generated study in `notes/EXCLUSIVE_LINKS_STUDY.md` did not meet Gate 1,
+so the rule remains OFF. The result is inconclusive rather than a proven rule
+failure because the self-supervised harness did not reproduce the known-good
+baseline from the earlier link-rule study (6 correct / 0 wrong versus 0/9 in
+the new harness). The verified cause is a population/baseline mismatch: the
+earlier harness scores sample expected resources and skips linked families,
+while the new harness hides all full-run identifier-linked account/analytics
+resources. Lesson: a validation harness must first reproduce a known-good
+baseline. Sample metrics and the allowed full-run change were unchanged;
+`output.csv` was not regenerated.
 
 ## 9. Plan / milestones (IST)
 | When | Milestone |
@@ -195,7 +199,7 @@ regenerated.
 - [Oct 24 20:30] Authoritative fresh full run completed once after archiving the mixed development usage log. The run logged 42 real calls (11 screenshots, 4 PDFs, 27 intent), 34,218 input tokens, 19,724 output tokens, 53,942 total tokens, estimated cost $0.038141, and 0 cache hits. The resulting `output.csv` is byte-identical to `pre-fresh-run`; sample metrics remain 32/32 status, 17/32 sequence, P=1.0000, R=0.8964, F1=0.9454, with dev/held-out unchanged at R=0.9060/0.8636. Validation and invariants both pass with 0 violations. Archived history is `notes/archive/usage_log_development.jsonl`; `code/evaluation/usage_report.py` now generates the authoritative report.
 - [Oct 24 22:15] Packaging/docs pass completed. Updated `code/evaluation/evaluation_report.md` with the current metrics, custom cases, root causes, LLM-layer contribution, and deterministic-versus-LLM ablation. Updated README setup, offline/keyed commands, architecture, limitations, and privacy statement. Built and inspected `code.zip` (298,329 bytes; 456 files), then ran the extracted package offline with the dataset symlink: 518 rows, 0 invariant violations, byte-identical output SHA-256 `a8aea02c…bd83435`. Root validation passed: exact header, 518 natural-order rows, valid JSON, consecutive steps, 0 errors.
 - [Oct 25] Added the cache-only, post-hoc audit-trail explanation CLI and tests. It masks identifiers, reports identity/link/state/policy/evidence reasoning, preserves exact emitted steps, and explicitly records low-evidence and rejected-decoy cases.
-- [Oct 25] Evaluated the opt-in exclusive workflow-dispatch matcher. The full generated study failed the self-supervised precision gate (0.0000; exclusive 13 wrong versus legacy 9), so the rule remains OFF and committed output is unchanged.
+- [Oct 25] Evaluated the opt-in exclusive workflow-dispatch matcher. The self-supervised precision gate was not met, but the result is inconclusive because the new harness did not reproduce the earlier known-good 6-correct/0-wrong baseline; the verified issue is a population/baseline mismatch. The rule remains OFF and committed output is unchanged.
 
 ## 12. Next steps
 1. Create `agent-trace.zip` per `agent_trace_instructions.md` without credentials.

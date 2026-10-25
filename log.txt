@@ -413,3 +413,23 @@ branch=exclusive-links
 repo_root=/home/vishruth/ghost-data-agent
 worktree=/home/vishruth/ghost-data-agent
 parent_agent=none
+## [2026-10-25T07:48:01+00:00] Clarify exclusive-link study outcome
+
+User Prompt (verbatim, secrets redacted):
+Read AGENTS.md first and follow the logging rules. Make a docs-only change on branch exclusive-links: clarify that the self-supervised precision adoption gate was not met, the experiment is inconclusive because the harness did not reproduce the known-good baseline, document the verified harness-population mismatch and lesson, update PROJECT_STATE.md and commit without pushing.
+
+Agent Response Summary:
+Verified AGENTS.md and branch exclusive-links. Updated only the study, evaluation report, and PROJECT_STATE.md to state that the >=0.99 adoption gate was not met and the rule stays OFF, while characterizing the result as inconclusive rather than a proven failure. The documentation records the verified mismatch between the sample expected-resource baseline and the full-run hidden-identifier harness, plus the lesson that a validation harness must first reproduce a known-good baseline.
+
+Actions:
+* Read AGENTS.md and inspected the existing study, evaluation paragraph, and both harness implementations.
+* Confirmed only Markdown/PRD files changed; no code, output, dataset, or cache files were edited.
+* Appended this per-turn log entry and will commit the documentation-only change.
+
+Context:
+tool=opencode
+model=gpt-5.6-luna
+branch=exclusive-links
+repo_root=/home/vishruth/ghost-data-agent
+worktree=/home/vishruth/ghost-data-agent
+parent_agent=none

@@ -166,9 +166,17 @@ Result: **6/6 passed**.
 ## 5. Failures found and improvements made
 
 An experimental exclusive workflow-dispatch matcher was evaluated in
-`notes/EXCLUSIVE_LINKS_STUDY.md`. It remains default-off: the self-supervised
-precision gate failed, while sample metrics stayed unchanged. The experiment
-was isolated behind a flag and introduced no LLM calls or network access.
+`notes/EXCLUSIVE_LINKS_STUDY.md`. The adoption gate **self-supervised
+precision >= 0.99 was NOT met**, so the rule stays **OFF**. The experiment is
+**INCONCLUSIVE**, not a proven failure, because its self-supervised harness did
+not reproduce a known-good baseline: the earlier link-rule study measured the
+same +/-15-minute rule at 6 correct / 0 wrong, while this harness scored it at
+0/9. The cause is verifiable from the harnesses: the earlier study scores
+sample expected resources and skips already-linked families, while this study
+hides every full-run identifier-linked account/analytics resource and scores
+alternate dispatch assignments. Lesson: a validation harness must first
+reproduce a known-good baseline. The experiment was isolated behind a flag and
+introduced no LLM calls or network access.
 
 The audit-trail explanation view was added as a deterministic, cache-only
 post-hoc projection of the existing trace, state, policy, and step objects; it
