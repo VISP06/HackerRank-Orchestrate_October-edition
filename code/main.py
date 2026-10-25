@@ -119,9 +119,9 @@ def build_engine(dataset_dir: str = "", llm=None, llm_tasks: str = "screenshots,
     return index, linker, rules
 
 
-def audit_case(case, linker, index, rules):
+def audit_case(case, linker, index, rules, trace_override=None):
     audit_at = case.get("audit_at", "")
-    trace = linker.link_case(case, audit_at)
+    trace = trace_override or linker.link_case(case, audit_at)
     states = reconstruct_state(index, trace, audit_at)
     status, steps = build_case_result(states, rules, audit_at, trace)
     return status, steps, trace, states
@@ -134,9 +134,12 @@ def run_pipeline(
     fresh: bool = False,
     skip_llm: bool = False,
     llm_tasks: str = "screenshots,pdfs,intent",
+    exclusive_links: bool = False,
+    offline: bool = False,
 ) -> dict:
     """Run the full pipeline. Returns a summary dict."""
-    _load_dotenv()
+    if not offline:
+        _load_dotenv()
 
     requests = load_deletion_requests(requests_path)
 
@@ -147,7 +150,7 @@ def run_pipeline(
     enabled_tasks = {t.strip() for t in (llm_tasks or "").split(",") if t.strip()}
     if not skip_llm:
         from code.ghost.llm import LLMClient
-        llm = LLMClient(fresh=fresh)
+        llm = LLMClient(api_key="" if offline else None, fresh=fresh)
 
     index, linker, rules = build_engine(llm=llm, llm_tasks=llm_tasks)
     extraction = getattr(index, "llm_extraction", {})
@@ -174,12 +177,22 @@ def run_pipeline(
                 )
 
     output_rows = []
+    exclusive_traces = {}
+    exclusive_assignments = {}
+    exclusive_diagnostics = {}
+    if exclusive_links:
+        from code.ghost.exclusive_links import link_cases_exclusive
+        eligible_requests = [req for req in requests if authorizes_deletion(req.get("request_text", ""))]
+        exclusive_traces, exclusive_assignments, exclusive_diagnostics, _ = link_cases_exclusive(eligible_requests, linker)
     for req in requests:
         case_id = req["case_id"]
         if not authorizes_deletion(req.get("request_text", "")):
             status, steps = "NOT_APPLICABLE", []
         else:
-            status, steps, trace, states = audit_case(req, linker, index, rules)
+            status, steps, trace, states = audit_case(
+                req, linker, index, rules,
+                trace_override=exclusive_traces.get(case_id),
+            )
             if explain and case_id == explain:
                 print(f"[explain] {case_id} status={status}")
                 for resource_id in sorted(states):
@@ -239,6 +252,7 @@ def run_pipeline(
         "pdf_results": pdf_results,
         "intent_disagreements": intent_disagreements,
         "intent_classifications_count": len(intent_classifications),
+        "exclusive_links": exclusive_diagnostics,
     }
 
     # Usage accounting
@@ -252,6 +266,13 @@ def run_pipeline(
         f"{status_dist.get('NOT_APPLICABLE', 0)} NOT_APPLICABLE, "
         f"{step_count} steps, validation=ok, invariants={len(violations)}"
     )
+    if exclusive_links:
+        print(
+            "Exclusive links: "
+            f"candidates={exclusive_diagnostics.get('candidate_edges', 0)}, "
+            f"forced={exclusive_diagnostics.get('forced_matches', 0)}, "
+            f"excluded_taken={exclusive_diagnostics.get('excluded_taken_events', 0)}"
+        )
 
     return summary
 
@@ -265,6 +286,7 @@ def main() -> None:
     parser.add_argument("--explain-all", default="", metavar="DIR", help="Write one explanation JSON file per case")
     parser.add_argument("--fresh", action="store_true", help="Bypass all LLM caches for a fresh run")
     parser.add_argument("--skip-llm", action="store_true", help="Skip all LLM features (deterministic only)")
+    parser.add_argument("--exclusive-links", action="store_true", help="Opt into conservative exclusive workflow-dispatch matching")
     parser.add_argument(
         "--llm-tasks",
         default="screenshots,pdfs,intent",
@@ -280,12 +302,20 @@ def main() -> None:
         requests = load_deletion_requests(args.requests)
         index, linker, rules = build_engine(llm=offline_llm)
         wanted = {args.explain} if args.explain else {r["case_id"] for r in requests}
+        exclusive_traces = {}
+        if args.exclusive_links:
+            from code.ghost.exclusive_links import link_cases_exclusive
+            eligible_requests = [r for r in requests if authorizes_deletion(r.get("request_text", ""))]
+            exclusive_traces, _, _, _ = link_cases_exclusive(eligible_requests, linker)
         explanations = {}
         for req in requests:
             if req["case_id"] not in wanted:
                 continue
             if authorizes_deletion(req.get("request_text", "")):
-                status, steps, trace, states = audit_case(req, linker, index, rules)
+                status, steps, trace, states = audit_case(
+                    req, linker, index, rules,
+                    trace_override=exclusive_traces.get(req["case_id"]),
+                )
             else:
                 trace = linker.link_case(req, req.get("audit_at", ""))
                 status, steps, states = "NOT_APPLICABLE", [], {}
@@ -306,6 +336,8 @@ def main() -> None:
         fresh=args.fresh,
         skip_llm=args.skip_llm,
         llm_tasks=args.llm_tasks,
+        exclusive_links=args.exclusive_links,
+        offline=args.exclusive_links,
     )
 
     # Print summary

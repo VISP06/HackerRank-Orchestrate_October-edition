@@ -393,3 +393,23 @@ branch=explain
 repo_root=/home/vishruth/ghost-data-agent
 worktree=/home/vishruth/ghost-data-agent
 parent_agent=none
+## [2026-10-25T07:40:18+00:00] Evaluate exclusive workflow links
+
+User Prompt (verbatim, secrets redacted):
+Read AGENTS.md and PROJECT_STATE.md first and follow the logging rules exactly. Work only on branch exclusive-links. Implement a conservative default-off exclusive workflow-dispatch matcher, generate the required study and gates, update documentation, and commit without pushing.
+
+Agent Response Summary:
+Verified branch exclusive-links and read both required project documents. Implemented the opt-in exclusive matcher using the existing +/-15-minute anchors, global taken-resource exclusion, symmetric forced matching, and workflow_exclusive link reasons; the legacy rule and committed output remain unchanged by default. The generated study failed the self-supervised precision adoption gate (old 0.0000, exclusive 0.0000; exclusive had 13 wrong assignments versus 9), while sample metrics and the allowed full-run diff passed, so the feature remains OFF.
+
+Actions:
+* Added the separated exclusive-links module, opt-in CLI/pipeline flag, generated study, and tests.
+* Ran keyless baseline regeneration, sample evaluation, full-run diff, validation/invariants, deterministic repeat runs, explanation-link checks, and all six tests.
+* Updated PROJECT_STATE.md, README.md, LINK_RULE_STUDY.md, evaluation reports, usage note, and generated EXCLUSIVE_LINKS_STUDY.md.
+
+Context:
+tool=opencode
+model=gpt-5.6-luna
+branch=exclusive-links
+repo_root=/home/vishruth/ghost-data-agent
+worktree=/home/vishruth/ghost-data-agent
+parent_agent=none

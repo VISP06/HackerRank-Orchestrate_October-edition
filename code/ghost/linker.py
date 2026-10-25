@@ -341,6 +341,15 @@ class CaseLinker:
             trace.resources[rid].activity_ids.append(row.get("activity_id", ""))
 
     def link_case(self, case: Dict[str, str], audit_at: str) -> CaseTrace:
+        return self._link_case_mode(case, audit_at, workflow_mode="legacy")
+
+    def _link_case_mode(
+        self,
+        case: Dict[str, str],
+        audit_at: str,
+        workflow_mode: str = "legacy",
+        selected_dispatches: Optional[List[Dict[str, str]]] = None,
+    ) -> CaseTrace:
         cluster = self.cluster_for(case.get("email", ""))
         trace = CaseTrace(case_id=case["case_id"], user_id=cluster["user_id"], cluster=cluster)
 
@@ -428,9 +437,26 @@ class CaseLinker:
                     )
                     trace.resources[downstream].note_known_at(event_time)
 
-        # 4. Unique workflow-dispatch discovery (deleted accounts, anonymized
-        #    analytics profiles).  Ambiguity is rejected, never guessed.
-        self._link_workflow_dispatches(trace, case, audit_at)
+        # 4. The legacy dispatch rule remains the default.  The selected mode
+        # receives only globally forced assignments from exclusive_links.
+        if workflow_mode in ("legacy", "legacy_plus_selected"):
+            self._link_workflow_dispatches(trace, case, audit_at)
+        if workflow_mode in ("selected", "legacy_plus_selected"):
+            for row in selected_dispatches or []:
+                rid = row.get("resource_id", "")
+                if not rid:
+                    continue
+                trace.link_resource(
+                    rid,
+                    LinkPath(
+                        resource_id=rid,
+                        reason="workflow_exclusive",
+                        identifier=row.get("activity_id", ""),
+                        evidence_id=row.get("activity_id", ""),
+                    ),
+                )
+                trace.resources[rid].note_known_at(row.get("event_time", ""))
+                trace.resources[rid].activity_ids.append(row.get("activity_id", ""))
 
         # 5. Resource-scoped evidence attach: once a resource id is grounded by
         #    any link, every observation that names that resource belongs to
@@ -457,6 +483,19 @@ class CaseLinker:
                 if eligible:
                     trace.resources[rid].note_known_at(obs.observed_at or obs.captured_at)
         return trace
+
+    def link_case_selected(
+        self,
+        case: Dict[str, str],
+        audit_at: str,
+        selected_dispatches: Optional[List[Dict[str, str]]] = None,
+    ) -> CaseTrace:
+        """Link with externally computed, forced exclusive assignments."""
+        return self._link_case_mode(case, audit_at, "legacy_plus_selected", selected_dispatches)
+
+    def link_case_without_workflow(self, case: Dict[str, str], audit_at: str) -> CaseTrace:
+        """Build the pre-dispatch trace for global exclusive matching."""
+        return self._link_case_mode(case, audit_at, "none")
 
 
 def load_activity_rows(path: str) -> List[Dict[str, str]]:

@@ -79,6 +79,13 @@ Useful switches:
 | `--explain case_01` | Print linked resources, states, and evidence for one case |
 | `--json` | Emit `--explain` as machine-readable JSON |
 | `--explain-all DIR` | Write deterministic JSON explanations for all cases into `DIR` |
+| `--exclusive-links` | Opt in to the experimental, conservative exclusive workflow-dispatch rule (default off) |
+
+`--exclusive-links` is a default-off experiment: it excludes dispatch resources
+already grounded for any case and accepts only symmetric one-to-one forced
+matches. It is deterministic and makes no LLM or network calls; see
+[`notes/EXCLUSIVE_LINKS_STUDY.md`](notes/EXCLUSIVE_LINKS_STUDY.md) for the
+negative adoption result.
 
 To specify custom input or output paths:
 ```bash

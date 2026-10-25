@@ -168,3 +168,6 @@ resource links, so it was rejected. The nearest-gap variant accepts 8 links, but
 to another request in the same batch; it is rejected. Ambiguous dispatch batches are
 never guessed.
 
+The separately gated exclusive-link experiment is documented in
+[`EXCLUSIVE_LINKS_STUDY.md`](EXCLUSIVE_LINKS_STUDY.md). Its implementation is
+opt-in via `--exclusive-links`; the legacy rule remains the production default.

@@ -165,6 +165,11 @@ Result: **6/6 passed**.
 
 ## 5. Failures found and improvements made
 
+An experimental exclusive workflow-dispatch matcher was evaluated in
+`notes/EXCLUSIVE_LINKS_STUDY.md`. It remains default-off: the self-supervised
+precision gate failed, while sample metrics stayed unchanged. The experiment
+was isolated behind a flag and introduced no LLM calls or network access.
+
 The audit-trail explanation view was added as a deterministic, cache-only
 post-hoc projection of the existing trace, state, policy, and step objects; it
 does not alter decisions or make model/network calls.

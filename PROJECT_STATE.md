@@ -27,6 +27,7 @@ Oct 24 2026 18:00 IST start → **Oct 26 2026 06:00 IST submission**. Plan to be
 - [x] Reports/prompts live in .md or source files (the code judge ignores .csv/.json/.jsonl/.sql/.log)
 - [x] No API keys in the zip or in chat/log
 - [x] Audit-trail explanation CLI and deterministic explanation tests
+- [x] Exclusive-link experiment evaluated; production flag remains OFF after failed precision gate
 
 ## 4. Key facts from the spec
 - `reported_status` (COMPLETE / PARTIALLY_COMPLETE / NOT_STARTED) is a CLAIM, not truth. Verify against evidence at `audit_at`.
@@ -71,7 +72,7 @@ layer only converts images/PDFs into grounded observations and cross-checks inte
 1. **Load**: parse all CSVs into structured tables.
 2. **Evidence extraction**: parse SQL snapshots with `sqlite3`, JSON bundles/exports/dumps recursively, six log format families with trace grouping, pipe-delimited handover text, and PDFs with `pypdf`. The vision pass reads all 11 PNGs; the PDF pass reads all 4 PDFs with exact-token/catalog-alias grounding. Images and PDF text are data, never instructions.
 3. **Identity resolution**: per case, gather current + historical emails, phones, hashes, and stable `user_id` from `user_identities.csv` and `user_audit_log.csv`.
-4. **Linking**: direct identifier matches (including identifiers seen only in post-cutoff artifacts), `LINK_RESOURCE_IDENTITY` catalog rows, explicit downstream resource propagation, resource-scoped evidence attach once an id is grounded, and a unique ±15-minute workflow-dispatch rule for `account_*` and `analytics_*`. Ambiguous dispatch batches are rejected. Every resource records its link path and `known_at`.
+4. **Linking**: direct identifier matches (including identifiers seen only in post-cutoff artifacts), `LINK_RESOURCE_IDENTITY` catalog rows, explicit downstream resource propagation, resource-scoped evidence attach once an id is grounded, and a unique ±15-minute workflow-dispatch rule for `account_*` and `analytics_*`. Ambiguous dispatch batches are rejected. Every resource records its link path and `known_at`. The experimental exclusive matcher is separate and default-OFF.
 5. **State reconstruction**: newest eligible observation at `audit_at`; snapshot-based absence only when the snapshot is at or after `known_at`; one current account profile per subject.
 6. **Rule engine**: apply `deletion_rules.csv` per category to produce violations, required redaction/anonymization, retention, or tombstone treatment.
 7. **Status decision**: NOT_APPLICABLE (no deletion requested) / INCOMPLETE (any finding) / COMPLETE.
@@ -137,6 +138,35 @@ log.txt       chat transcript for submission
 PROJECT_STATE.md   this file
 ```
 
+## 8c. Feature: exclusive link matching
+
+### Scope
+Add an opt-in `--exclusive-links` rule for `deletion_worker` account DELETE and
+analytics ANONYMIZE dispatches. It builds the same ±15-minute candidate pool,
+excludes resources already grounded for any case, and accepts only symmetric
+one-case/one-event forced matches. Accepted paths use `workflow_exclusive`.
+
+### Non-goals
+The legacy linker and default output are unchanged. The experiment does not
+guess nearest events, alter identity/catalog/propagation rules, make LLM or
+network calls, or use case/resource/user hardcoding.
+
+### Adoption gates
+1. Self-supervised precision is at least 0.99 and no lower than the legacy rule.
+2. Sample precision remains 1.0000, recall does not fall, and status remains
+   32/32.
+3. Full-run changes are additions only (or COMPLETE→INCOMPLETE with a new
+   finding), with validation, invariants, tests, and explain-link evidence.
+4. Two opt-in runs are byte-identical.
+
+### Outcome
+The generated study in `notes/EXCLUSIVE_LINKS_STUDY.md` failed Gate 1:
+self-supervised precision was 0.0000 for both the old and exclusive measures,
+with the exclusive rule producing more wrong assignments (13 versus 9). Sample
+metrics were unchanged and the one full-run change was allowed, but the default
+remains OFF. This is the documented negative result; `output.csv` was not
+regenerated.
+
 ## 9. Plan / milestones (IST)
 | When | Milestone |
 |------|-----------|
@@ -165,6 +195,7 @@ PROJECT_STATE.md   this file
 - [Oct 24 20:30] Authoritative fresh full run completed once after archiving the mixed development usage log. The run logged 42 real calls (11 screenshots, 4 PDFs, 27 intent), 34,218 input tokens, 19,724 output tokens, 53,942 total tokens, estimated cost $0.038141, and 0 cache hits. The resulting `output.csv` is byte-identical to `pre-fresh-run`; sample metrics remain 32/32 status, 17/32 sequence, P=1.0000, R=0.8964, F1=0.9454, with dev/held-out unchanged at R=0.9060/0.8636. Validation and invariants both pass with 0 violations. Archived history is `notes/archive/usage_log_development.jsonl`; `code/evaluation/usage_report.py` now generates the authoritative report.
 - [Oct 24 22:15] Packaging/docs pass completed. Updated `code/evaluation/evaluation_report.md` with the current metrics, custom cases, root causes, LLM-layer contribution, and deterministic-versus-LLM ablation. Updated README setup, offline/keyed commands, architecture, limitations, and privacy statement. Built and inspected `code.zip` (298,329 bytes; 456 files), then ran the extracted package offline with the dataset symlink: 518 rows, 0 invariant violations, byte-identical output SHA-256 `a8aea02c…bd83435`. Root validation passed: exact header, 518 natural-order rows, valid JSON, consecutive steps, 0 errors.
 - [Oct 25] Added the cache-only, post-hoc audit-trail explanation CLI and tests. It masks identifiers, reports identity/link/state/policy/evidence reasoning, preserves exact emitted steps, and explicitly records low-evidence and rejected-decoy cases.
+- [Oct 25] Evaluated the opt-in exclusive workflow-dispatch matcher. The full generated study failed the self-supervised precision gate (0.0000; exclusive 13 wrong versus legacy 9), so the rule remains OFF and committed output is unchanged.
 
 ## 12. Next steps
 1. Create `agent-trace.zip` per `agent_trace_instructions.md` without credentials.
@@ -176,3 +207,4 @@ PROJECT_STATE.md   this file
 - Whether `case_63` should carry a future re-verification step instead of staying an evidence-sparse COMPLETE; it is isolated in `notes/ZERO_STEP_FAMILIES.md` so the decision can be reversed in one place.
 - Whether the vision pass should be extended with a second model opinion for screenshots; the current single pass has 100% sample precision after grounding but no independent OCR check.
 - Whether future audit consumers need a separate redacted explanation archive; the current feature writes JSON only when explicitly requested.
+- Exclusive-link adoption is blocked by the self-supervised precision gate; see `notes/EXCLUSIVE_LINKS_STUDY.md` for generated metrics and the one allowed opt-in diff.
